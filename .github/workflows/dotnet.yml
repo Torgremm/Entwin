@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v3
@@ -22,10 +23,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
+    - name: Build (Release config)
+      run: dotnet build --configuration Release
 
-    - name: Test API
-      run: dotnet test Entwin.API.Tests/Entwin.API.Tests.csproj --no-build --verbosity normal
+    - name: Test API (Release config)
+      run: dotnet test Entwin.API.Tests/Entwin.API.Tests.csproj --configuration Release --verbosity normal
 
-    # Optional: publish and deploy steps here (requires Azure credentials)
+    # TODO: publish and deploy steps here (Azure)
