@@ -1,6 +1,15 @@
 @Entwin.API_HostAddress = http://localhost:5283
 
-GET {{Entwin.API_HostAddress}}/weatherforecast/
+POST {{Entwin.API_HostAddress}}/simulate
+Content-Type: application/json
 Accept: application/json
 
-###
+{
+  "numerator": [1],
+  "denominator": [1, 1],
+  "input": 1.0,
+  "time": 0.0,
+  "timeStep": 0.1,
+  "inputHistory": [],
+  "outputHistory": []
+}
