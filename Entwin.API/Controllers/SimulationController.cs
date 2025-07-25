@@ -1,5 +1,5 @@
 using Entwin.API.Models;
-using MathNet.Numerics.LinearAlgebra;
+using Entwin.API.Components;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Entwin.API.Controllers;
@@ -8,26 +8,59 @@ public static class SimulationController
 {
     public static void RegisterEndpoints(WebApplication app)
     {
-        app.MapPost("/simulate-step", ([FromBody] TransferFunctionRequest req) =>
+        app.MapPost("/simulate-step", ([FromBody] SimulationRequest req) =>
         {
-            var result = SimulateTransferFunction(req);
+            var result = SimulateCanvas(req);
             return Results.Ok(result);
         });
     }
+    public static SimulationResponse SimulateCanvas(SimulationRequest request){
 
-    private static TransferFunctionResponse SimulateTransferFunction(TransferFunctionRequest req){
+        var componentById = request.Components.ToDictionary(c => c.Id);
+        var outputs = new Dictionary<int, double>();
+
+        foreach (var component in request.Components){
+            // Find input connection
+            var incoming = request.Connections.FirstOrDefault(c => c.To == component.Id);
+
+            double input = 0.0;
+            if (incoming != null && request.PreviousSignals.TryGetValue(incoming, out var signal)){
+                input = signal;
+            }
+
+            double output = component.SimulateStep(input, request.TimeKeeper.Time);
+            outputs[component.Id] = output;
+        }
+
+        var currentSignals = new Dictionary<Connection, double>();
+        foreach (var conn in request.Connections){
+            if (outputs.TryGetValue(conn.From, out double output)){
+                currentSignals[conn] = output;
+            }
+        }
+
+        return new SimulationResponse
+        {
+            Time = request.TimeKeeper.stepTime(),
+            ConnectionSignals = currentSignals,
+            PreviousSignals = currentSignals
+        };
+    }
+
+
+
+    public static TransferFunctionResponse SimulateTransferFunction(TransferFunctionRequest req){
         int order = req.Denominator.Count - 1;
         if (order < 0)
             throw new ArgumentException("Denominator must be at least order 0.");
 
         var (b, a) = DiscretizeEuler(req.Numerator, req.Denominator, req.TimeStep);
 
-        double u_n = req.Input;  // current input at this timestep
+        double u_n = req.Input;
 
         var inputHistory = req.InputHistory ?? new List<double>();
         var outputHistory = req.OutputHistory ?? new List<double>();
 
-        // Append current input to history
         inputHistory.Add(u_n);
 
         // Pad histories with zeros if needed
@@ -36,7 +69,6 @@ public static class SimulationController
         while (outputHistory.Count < order)
             outputHistory.Insert(0, 0.0);
 
-        // Compute output y[n] using difference equation
         double y_n = 0.0;
 
         for (int i = 0; i < b.Length; i++)
@@ -81,7 +113,8 @@ public static class SimulationController
 
         for (int i = 0; i < sCoeffs.Length; i++)
         {
-            // Compute ((z - 1)/dt)^i
+            // Compute ((z - 1)/dt)^i 
+            //TODO: Pass solver here
             var basePoly = new List<double> { 1.0, -1.0 }; // (z - 1)
             var term = new List<double> { 1.0 };
 
