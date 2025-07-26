@@ -15,10 +15,10 @@ public class TransferFunctionComponent : ISimulatable
     private List<double> _outputHistory = new();
     private double _currentTime = 0.0;
 
-    public TransferFunctionComponent(List<double> num, List<double> den, int id)
+    public TransferFunctionComponent(List<double> num, List<double> den, int id, SimulationRequest request)
     {
         Id = id;
-        var (b, a) = DiscretizeEuler(num, den, 0.1); //HARDCODED TIMESTEP MUST FIX
+        var (b, a) = DiscretizeEuler(num, den, request.settings.TimeStep);
         zNumerator = b.ToList();
         zDenominator = a.ToList();
     }

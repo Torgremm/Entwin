@@ -12,22 +12,23 @@ public class ConstantTests
 {
     [Fact]
     public void UnitStepResponse_ShouldApproximateFirstOrderRise(){
-        var tfComponent = new TransferFunctionComponent(
-            new List<double> { 1 }, 
-            new List<double> { 1, 1 }, 
-            1);
 
         var constant = new ConstantComponent(1, 2);
 
+        var request = new SimulationRequest
+        {
+            Components = new List<ISimulatable> { constant },
+            Connections = new List<Connection>(),
+            PreviousSignals = new Dictionary<Connection, double>()
+        };
+
+        var tfComponent = new TransferFunctionComponent(new List<double> { 1 }, new List<double> { 1, 1 }, 1, request);
         var outputConnection = new Connection(tfComponent.Id, -1);
         var inputConnection = new Connection(constant.Id, tfComponent.Id);
 
-        var request = new SimulationRequest
-        {
-            Components = new List<ISimulatable> { tfComponent, constant },
-            Connections = new List<Connection> {outputConnection, inputConnection},
-            PreviousSignals = new Dictionary<Connection, double>()
-        };
+        request.Components.Add(tfComponent);
+        request.Connections.Add(inputConnection);
+        request.Connections.Add(outputConnection);
 
         double duration = 10.0;
         int steps = (int)(duration / request.settings.TimeStep);

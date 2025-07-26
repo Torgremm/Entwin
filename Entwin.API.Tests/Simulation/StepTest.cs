@@ -17,16 +17,18 @@ public class StepTests
 
         var Numerator = new List<double> { 1.0 };
         var Denominator = new List<double> { 1.0, 1.0 };
-        var transferFunction = new TransferFunctionComponent(Numerator, Denominator, 200);
 
         var connection = new Connection(100,200);
 
         var request = new SimulationRequest
         {
-            Components = new List<ISimulatable> { stepComponent, transferFunction },
+            Components = new List<ISimulatable> { stepComponent },
             Connections = new List<Connection> { connection },
             PreviousSignals = new Dictionary<Connection, double>()
         };
+
+        var transferFunction = new TransferFunctionComponent(Numerator, Denominator, 200, request);
+        request.Components.Add(transferFunction);
 
         double t = 0.0;
         double outputAt5 = 0.0;
