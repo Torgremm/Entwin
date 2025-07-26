@@ -7,7 +7,7 @@ using Entwin.API.Controllers;
 using ScottPlot;
 
 namespace Entwin.API.Tests.Simulation;
-
+[Collection("SimulationTests")]
 public class ConstantTests
 {
     [Fact]
@@ -30,7 +30,7 @@ public class ConstantTests
         };
 
         double duration = 10.0;
-        int steps = (int)(duration / SimulationSettings.TimeStep);
+        int steps = (int)(duration / request.settings.TimeStep);
         var outputs = new List<double>();
         double currentTime = 0.0;
 

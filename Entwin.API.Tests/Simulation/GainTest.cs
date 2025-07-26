@@ -7,7 +7,7 @@ using Entwin.API.Controllers;
 using ScottPlot;
 
 namespace Entwin.API.Tests.Simulation;
-
+[Collection("SimulationTests")]
 public class GainTests
 {
     [Fact]
@@ -26,7 +26,7 @@ public class GainTests
         };
 
         double duration = 10.0;
-        int steps = (int)(duration / SimulationSettings.TimeStep);
+        int steps = (int)(duration / request.settings.TimeStep);
         var outputs = new List<double>();
         double currentTime = 0.0;
 
@@ -36,12 +36,13 @@ public class GainTests
 
             request.PreviousSignals = response.PreviousSignals;
             currentTime = response.Time;
+            request.settings.Time = currentTime;
             double output = response.ConnectionSignals[outputConnection];
             outputs.Add(output);
         }
 
-        Assert.True(outputs.Last() == 4.68, $"Final output should be double the gain - {outputs.Last()}");
         Assert.True(outputs[2] == 2.34, $"Initial output should be equal to gain - {outputs.First()}");
+        Assert.True(outputs.Last() == 4.68, $"Final output should be double the gain - {outputs.Last()}");
     }
 
 }

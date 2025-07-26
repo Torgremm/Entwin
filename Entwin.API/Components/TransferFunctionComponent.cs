@@ -18,7 +18,7 @@ public class TransferFunctionComponent : ISimulatable
     public TransferFunctionComponent(List<double> num, List<double> den, int id)
     {
         Id = id;
-        var (b, a) = DiscretizeEuler(num, den, SimulationSettings.TimeStep);
+        var (b, a) = DiscretizeEuler(num, den, 0.1); //HARDCODED TIMESTEP MUST FIX
         zNumerator = b.ToList();
         zDenominator = a.ToList();
     }

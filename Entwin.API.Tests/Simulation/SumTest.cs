@@ -7,7 +7,7 @@ using Entwin.API.Controllers;
 using ScottPlot;
 
 namespace Entwin.API.Tests.Simulation;
-
+[Collection("SimulationTests")]
 public class SumTests
 {
     [Fact]
@@ -47,31 +47,30 @@ public class SumTests
         };
 
         double duration = 10.0;
-        int steps = (int)(duration / SimulationSettings.TimeStep);
+        int steps = (int)(duration / request.settings.TimeStep);
         var outputs = new List<double>();
         double currentTime = 0.0;
 
         double twoSecondResult = 0;
         double eightSecondResult = 0;
 
-        for (int i = 0; i < steps; i++)
-        {
+        while (currentTime < 10.0){
             var response = Services.CanvasSimulation.SimulateCanvas(request);
-
-            request.PreviousSignals = response.PreviousSignals;
-            currentTime = response.Time;
             double output = response.ConnectionSignals[outputConnection];
-            if (currentTime - 2 < 0.1)
+
+            if (Math.Abs(response.Time - 2.0) < 0.1)
                 twoSecondResult = output;
 
-            if (currentTime - 8 < 0.1)
+            if (Math.Abs(response.Time - 8.0) < 0.1)
                 eightSecondResult = output;
 
-            outputs.Add(output);
+            request.PreviousSignals = response.PreviousSignals;
+            request.settings.Time = response.Time;
+            currentTime = response.Time;
         }
 
-        Assert.True(twoSecondResult == trueResult, $"Output should match at two second mark - {twoSecondResult - trueResult}");
-        Assert.True(eightSecondResult == trueResult, $"Output should match at eight second mark - {eightSecondResult - trueResult}");
+        Assert.True(twoSecondResult == trueResult, $"Output should match at two second mark - {twoSecondResult} - {trueResult}");
+        Assert.True(eightSecondResult == trueResult, $"Output should match at eight second mark - {eightSecondResult} - {trueResult}");
     }
 
 }

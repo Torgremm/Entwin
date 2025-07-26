@@ -8,20 +8,23 @@ public enum Solver
     EuF1
 }
 
-public static class SimulationSettings
+public class SimulationSettings
 {
-    public static double Duration { get; set; } = 10.0;
-    public static double TimeStep { get; set; } = 0.1;
-    public static Solver OdeSolver { get; set; } = Solver.EuF1;
-    public static double Time { get; set; } = new();
+    public double Duration { get; set; } = 10.0;
+    public double TimeStep { get; set; } = 0.1;
+    public Solver OdeSolver { get; set; } = Solver.EuF1;
+    public double Time { get; set; } = 0.0;
 
-    public static double stepTime(){
+    public double StepTime()
+    {
         return Time + TimeStep;
     }
 }
 
+
 public class SimulationRequest
 {
+    public SimulationSettings settings { get; set; } = new();
     public List<ISimulatable> Components { get; set; } = new();
     public List<Connection> Connections { get; set; } = new();
     public Dictionary<Connection, double> PreviousSignals { get; set; } = new();

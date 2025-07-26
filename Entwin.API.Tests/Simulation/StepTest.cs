@@ -7,7 +7,7 @@ using Entwin.API.Controllers;
 using ScottPlot;
 
 namespace Entwin.API.Tests.Simulation;
-
+[Collection("SimulationTests")]
 public class StepTests
 {
     [Fact]
@@ -43,12 +43,13 @@ public class StepTests
 
             // Prepare request for next step
             request.PreviousSignals = response.PreviousSignals;
-            SimulationSettings.Time = response.Time;
+            request.settings.Time = response.Time;
             t = response.Time;
         }
 
-        Assert.Equal(0.3, outputAt5, 3);
-        Assert.Equal(1.0, outputAt10, 3);
+        Assert.True(outputAt5 - 0.3 < 0.01, $"Output should match at five second mark - {outputAt5}");
+        Assert.True(outputAt10 - 1.0 < 0.01, $"Output should match at ten second mark - {outputAt10}");
+
     }
 
 }

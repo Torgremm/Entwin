@@ -16,7 +16,7 @@ public static class CanvasSimulation
                     .Select(c => req.PreviousSignals.TryGetValue(c, out var signal) ? signal : 0.0)
                     .ToArray();
 
-                return component.SimulateStep(input, SimulationSettings.Time);
+                return component.SimulateStep(input, req.settings.Time);
             });
 
         var currentSignals = req.Connections
@@ -25,7 +25,7 @@ public static class CanvasSimulation
 
         return new SimulationResponse
         {
-            Time = SimulationSettings.stepTime(),
+            Time = req.settings.StepTime(),
             ConnectionSignals = currentSignals,
             PreviousSignals = currentSignals
         };
