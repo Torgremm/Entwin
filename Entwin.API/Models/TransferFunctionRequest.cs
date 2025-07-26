@@ -1,6 +1,6 @@
 namespace Entwin.API.Models;
 
-public class TransferFunctionRequest : TimeSimulation  {
+public class TransferFunctionRequest  {
     public List<double> Numerator {get;set;} = new();
     public List<double> Denominator {get;set;} = new();
 
