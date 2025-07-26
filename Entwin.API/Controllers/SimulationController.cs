@@ -14,16 +14,11 @@ public static class SimulationController
             return Results.Ok(result);
         });
 
+        //There is no need for this?
         app.MapPost("/simulate-transfer-function", ([FromBody] TransferFunctionRequest req) =>
         {
-        var result = TransferFunctionSimulation.SimulateTransferFunction(req);
-        return Results.Ok(result);
+            var result = TransferFunctionSimulation.SimulateTransferFunction(req);
+            return Results.Ok(result);
         });
     }
-    
-
-
-
-    
-
 }

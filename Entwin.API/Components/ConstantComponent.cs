@@ -1,5 +1,3 @@
-using Entwin.API.Models;
-
 namespace Entwin.API.Components;
 
 public class ConstantComponent : ISimulatable
@@ -12,7 +10,7 @@ public class ConstantComponent : ISimulatable
         value = v;
         Id = id;
     }
-    public double SimulateStep(double input, double currentTime)
+    public double SimulateStep(double[] input, double currentTime)
     {
         return value;
     }

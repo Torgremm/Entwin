@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Entwin.API.Controllers;
 using ScottPlot;
 
-namespace Entwin.API.Tests;
+namespace Entwin.API.Tests.Simulation;
 
 public class StepTests
 {

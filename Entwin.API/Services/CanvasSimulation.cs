@@ -5,30 +5,23 @@ namespace Entwin.API.Services;
 
 public static class CanvasSimulation
 {
-    public static SimulationResponse SimulateCanvas(SimulationRequest req){
+    public static SimulationResponse SimulateCanvas(SimulationRequest req)
+    {
+        var outputs = req.Components.ToDictionary(
+            component => component.Id,
+            component =>
+            {
+                var input = req.Connections
+                    .Where(c => c.To == component.Id)
+                    .Select(c => req.PreviousSignals.TryGetValue(c, out var signal) ? signal : 0.0)
+                    .ToArray();
 
-        var componentById = req.Components.ToDictionary(c => c.Id);
-        var outputs = new Dictionary<int, double>();
+                return component.SimulateStep(input, SimulationSettings.Time);
+            });
 
-        foreach (var component in req.Components){
-            // Find input connection
-            var incoming = req.Connections.FirstOrDefault(c => c.To == component.Id);
-
-            double input = 0.0;
-            if (incoming != null && req.PreviousSignals.TryGetValue(incoming, out var signal)){
-                input = signal;
-            }
-
-            double output = component.SimulateStep(input, SimulationSettings.Time);
-            outputs[component.Id] = output;
-        }
-
-        var currentSignals = new Dictionary<Connection, double>();
-        foreach (var conn in req.Connections){
-            if (outputs.TryGetValue(conn.From, out double output)){
-                currentSignals[conn] = output;
-            }
-        }
+        var currentSignals = req.Connections
+            .Where(c => outputs.ContainsKey(c.From))
+            .ToDictionary(c => c, c => outputs[c.From]);
 
         return new SimulationResponse
         {

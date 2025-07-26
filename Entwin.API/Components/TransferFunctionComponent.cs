@@ -1,5 +1,4 @@
 using Entwin.API.Models;
-using Entwin.API.Controllers;
 using Entwin.API.Services;
 
 namespace Entwin.API.Components;
@@ -23,7 +22,7 @@ public class TransferFunctionComponent : ISimulatable
         zNumerator = b.ToList();
         zDenominator = a.ToList();
     }
-    public double SimulateStep(double input, double currentTime)
+    public double SimulateStep(double[] input, double currentTime)
     {
         _currentTime = currentTime;
 
@@ -31,7 +30,7 @@ public class TransferFunctionComponent : ISimulatable
         {
             Numerator = this.zNumerator,
             Denominator = this.zDenominator,
-            Input = input,
+            Input = input[0],
             InputHistory = _inputHistory,
             OutputHistory = _outputHistory
         };

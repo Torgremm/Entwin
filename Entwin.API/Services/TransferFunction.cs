@@ -11,7 +11,6 @@ public static class TransferFunctionSimulation
         if (order < 0)
             throw new ArgumentException("Denominator must be at least order 0.");
 
-        //var (b, a) = DiscretizeEuler(req.Numerator, req.Denominator, req.TimeStep);
         var b = req.Numerator.ToArray();
         var a = req.Denominator.ToArray();
 

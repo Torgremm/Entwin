@@ -1,14 +1,17 @@
-using Entwin.API.Models;
-
 namespace Entwin.API.Components;
 
 public class GainComponent : ISimulatable
 {
-    public double value { get; set; } = new();
+    public double Value { get; set; } = new();
     public int Id { get; set; } = new();
 
-    public double SimulateStep(double input, double currentTime)
+    public GainComponent(double v, int id)
     {
-        return input * value;
+        Value = v;
+        Id = id;
+    }
+    public double SimulateStep(double[] input, double currentTime)
+    {
+        return input[0] * Value;
     }
 }

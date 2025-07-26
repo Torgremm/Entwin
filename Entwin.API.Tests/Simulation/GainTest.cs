@@ -8,23 +8,19 @@ using ScottPlot;
 
 namespace Entwin.API.Tests.Simulation;
 
-public class ConstantTests
+public class GainTests
 {
     [Fact]
-    public void UnitStepResponse_ShouldApproximateFirstOrderRise(){
-        var tfComponent = new TransferFunctionComponent(
-            new List<double> { 1 }, 
-            new List<double> { 1, 1 }, 
-            1);
+    public void GainResponse_ShouldConstantGain(){
+        var stepComponent = new StepComponent(1,2,4,1);
+        var gainComponent = new GainComponent(2.34, 2);
 
-        var constant = new ConstantComponent(1, 2);
-
-        var outputConnection = new Connection(tfComponent.Id, -1);
-        var inputConnection = new Connection(constant.Id, tfComponent.Id);
+        var inputConnection = new Connection(stepComponent.Id, gainComponent.Id);
+        var outputConnection = new Connection(gainComponent.Id, -1);
 
         var request = new SimulationRequest
         {
-            Components = new List<ISimulatable> { tfComponent, constant },
+            Components = new List<ISimulatable> { gainComponent, stepComponent },
             Connections = new List<Connection> {outputConnection, inputConnection},
             PreviousSignals = new Dictionary<Connection, double>()
         };
@@ -44,8 +40,8 @@ public class ConstantTests
             outputs.Add(output);
         }
 
-        Assert.True(outputs.Last() > 0.9, $"Final output should approach 1.0 - {outputs.Last()}");
-        Assert.True(outputs.First() < 0.2, $"Initial output should be near 0.1 or lower - {outputs.First()}");
+        Assert.True(outputs.Last() == 4.68, $"Final output should be double the gain - {outputs.Last()}");
+        Assert.True(outputs[2] == 2.34, $"Initial output should be equal to gain - {outputs.First()}");
     }
 
 }

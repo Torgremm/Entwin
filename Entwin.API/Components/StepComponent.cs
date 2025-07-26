@@ -1,5 +1,3 @@
-using Entwin.API.Models;
-using Entwin.API.Controllers;
 namespace Entwin.API.Components;
 
 public class StepComponent : ISimulatable
@@ -16,7 +14,7 @@ public class StepComponent : ISimulatable
         SwitchTime = s;
         Id = id;
     }
-    public double SimulateStep(double input, double currentTime)
+    public double SimulateStep(double[] input, double currentTime)
     {
         return currentTime > SwitchTime ? EndValue : StartValue;
     }
