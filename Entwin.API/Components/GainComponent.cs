@@ -14,4 +14,9 @@ public class GainComponent : ISimulatable
     {
         return input[0] * Value;
     }
+
+    public double[] SortedInput(double[] input, int[] Ids)
+    {
+        return input;
+    }
 }

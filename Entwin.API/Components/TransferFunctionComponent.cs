@@ -43,6 +43,11 @@ public class TransferFunctionComponent : ISimulatable
         return response.Output;
     }
 
+    public double[] SortedInput(double[] input, int[] Ids)
+    {
+        return input;
+    }
+
     private static (double[] b_z, double[] a_z) DiscretizeEuler(List<double> b_s, List<double> a_s, double dt)
     {
         var num_z = ConvertPolynomial(b_s.ToArray(), dt);

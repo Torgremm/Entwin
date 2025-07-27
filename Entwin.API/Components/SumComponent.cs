@@ -19,4 +19,9 @@ public class SumComponent : ISimulatable
         }
         return sum;
     }
+
+    public double[] SortedInput(double[] input, int[] Ids)
+    {
+        return input;
+    }
 }

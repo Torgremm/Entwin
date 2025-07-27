@@ -9,15 +9,21 @@ public static class CanvasSimulation
     {
         var outputs = req.Components.ToDictionary(
             component => component.Id,
-            component =>
-            {
-                var input = req.Connections
-                    .Where(c => c.To == component.Id)
-                    .Select(c => req.PreviousSignals.TryGetValue(c, out var signal) ? signal : 0.0)
-                    .ToArray();
+            component => {
+            var inputsWithIds = req.Connections
+                .Where(c => c.To == component.Id) //Incoming signals
+                .Select(c => new { //Find IDs of components
+                    Id = c.From,
+                    Signal = req.PreviousSignals.TryGetValue(c, out var signal) ? signal : 0.0
+                })
+                .ToArray();
 
-                return component.SimulateStep(input, req.settings.Time);
+            var rawInput = inputsWithIds.Select(x => x.Signal).ToArray();
+            var rawIds = inputsWithIds.Select(x => x.Id).ToArray();
+            var sortedInput = component.SortedInput(rawInput, rawIds);
+            return component.SimulateStep(sortedInput, req.settings.Time);
             });
+
 
         var currentSignals = req.Connections
             .Where(c => outputs.ContainsKey(c.From))

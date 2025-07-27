@@ -33,7 +33,7 @@ public class GainTests
         for (int i = 0; i < steps; i++)
         {
             var response = Services.CanvasSimulation.SimulateCanvas(request);
-
+            request.settings.Time = response.Time;
             request.PreviousSignals = response.PreviousSignals;
             currentTime = response.Time;
             request.settings.Time = currentTime;

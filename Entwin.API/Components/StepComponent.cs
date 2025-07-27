@@ -18,4 +18,9 @@ public class StepComponent : ISimulatable
     {
         return currentTime > SwitchTime ? EndValue : StartValue;
     }
+
+    public double[] SortedInput(double[] input, int[] Ids)
+    {
+        return input;
+    }
 }

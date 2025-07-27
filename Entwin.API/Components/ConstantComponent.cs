@@ -14,5 +14,10 @@ public class ConstantComponent : ISimulatable
     {
         return value;
     }
+    public double[] SortedInput(double[] input, int[] Ids)
+    {
+        return input;
+    }
+
 
 }
