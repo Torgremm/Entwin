@@ -1,7 +1,6 @@
 using Entwin.API.Components;
 using Entwin.API.Models;
-using NCalc;
-
+using Flee.PublicTypes;
 
 namespace Entwin.API.Services;
 
@@ -11,20 +10,29 @@ public static class CustomFunctionSimulation
     {
         string expressionString = req.userExpression;
 
-        Expression expression = new Expression(expressionString, EvaluateOptions.IgnoreCase | EvaluateOptions.NoCache);
+        var context = new ExpressionContext();
 
-        // Build the input array from the componentSignals, respecting the ordering in IdToInputMap
-        for (int i = 0; i < input.Length; i++)
-        {
-            expression.Parameters[$"input{i}"] = input[i];
+        context.Imports.AddType(typeof(Math));
+
+        for (int i = 0; i < input.Length; i++){
+            context.Variables[$"input{i}"] = input[i];
         }
 
-        expression.Parameters["time"] = req.time;
+        context.Variables["time"] = req.time;
 
-        var result = expression.Evaluate();
-
-        if (result is double d)
+        IDynamicExpression e;
+        try
         {
+            e = context.CompileDynamic(expressionString);
+        }
+        catch (ExpressionCompileException ex)
+        {
+            throw new InvalidOperationException("Invalid expression: " + ex.Message);
+        }
+
+        var result = e.Evaluate();
+
+        if (result is double d){
             if (double.IsInfinity(d) || double.IsNaN(d))
                 return double.NaN;
 
@@ -33,7 +41,4 @@ public static class CustomFunctionSimulation
 
         throw new InvalidOperationException("Expression did not return a numeric value.");
     }
-
-
-    
 }
