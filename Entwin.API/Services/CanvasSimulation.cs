@@ -13,7 +13,7 @@ public static class CanvasSimulation
                 var incomingConnections = req.Connections
                     .Where(c => c.To == component.Id)
                     .ToArray();
-    
+
                 double[] sortedInput = new double[incomingConnections.Length];
                 foreach (Connection c in incomingConnections){
                     var signal = req.PreviousSignals.TryGetValue(c, out var s) ? s : 0.0;
@@ -24,9 +24,17 @@ public static class CanvasSimulation
         );
 
 
-        var currentSignals = req.Connections
-            .Where(c => outputs.ContainsKey(c.From))
-            .ToDictionary(c => c, c => outputs[c.From]);
+        var currentSignals = req.Connections.ToDictionary(
+        c => c,
+        c => {
+            if (outputs.TryGetValue(c.From, out var outputArray) &&
+                c.From_Position >= 0 &&
+                c.From_Position < outputArray.Length){
+                return outputArray[c.From_Position];
+            }
+
+            return 0.0;
+        });
 
         return new SimulationResponse
         {

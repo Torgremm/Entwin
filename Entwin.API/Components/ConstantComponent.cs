@@ -10,14 +10,9 @@ public class ConstantComponent : ISimulatable
         value = v;
         Id = id;
     }
-    public double SimulateStep(double[] input, double currentTime)
+    public double[] SimulateStep(double[] input, double currentTime)
     {
-        return value;
+        return [value];
     }
-    public double[] SortedInput(double[] input, int[] Ids)
-    {
-        return input;
-    }
-
 
 }

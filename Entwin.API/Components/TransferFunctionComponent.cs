@@ -22,7 +22,7 @@ public class TransferFunctionComponent : ISimulatable
         zNumerator = b.ToList();
         zDenominator = a.ToList();
     }
-    public double SimulateStep(double[] input, double currentTime)
+    public double[] SimulateStep(double[] input, double currentTime)
     {
         _currentTime = currentTime;
 
@@ -40,12 +40,7 @@ public class TransferFunctionComponent : ISimulatable
         _inputHistory = response.InputHistory;
         _outputHistory = response.OutputHistory;
 
-        return response.Output;
-    }
-
-    public double[] SortedInput(double[] input, int[] Ids)
-    {
-        return input;
+        return [response.Output];
     }
 
     private static (double[] b_z, double[] a_z) DiscretizeEuler(List<double> b_s, List<double> a_s, double dt)

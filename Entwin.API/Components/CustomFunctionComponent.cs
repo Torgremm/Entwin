@@ -20,19 +20,14 @@ namespace Entwin.API.Components
             ValidateExpression(_expressionString);
         }
 
-        public double SimulateStep(double[] input, double currentTime)
+        public double[] SimulateStep(double[] input, double currentTime)
         {
             CustomFunctionRequest req = new()
             {
                 userExpression = _expressionString,
                 time = _settings.Time
             };
-            return CustomFunctionSimulation.SimulateCustomFunction(req, input);
-        }
-
-        public double[] SortedInput(double[] input, int[] Ids)
-        {
-            return input;
+            return [CustomFunctionSimulation.SimulateCustomFunction(req, input)];
         }
 
         private void ValidateExpression(string expr)

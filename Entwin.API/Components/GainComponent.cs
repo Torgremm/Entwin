@@ -10,13 +10,8 @@ public class GainComponent : ISimulatable
         Value = v;
         Id = id;
     }
-    public double SimulateStep(double[] input, double currentTime)
+    public double[] SimulateStep(double[] input, double currentTime)
     {
-        return input[0] * Value;
-    }
-
-    public double[] SortedInput(double[] input, int[] Ids)
-    {
-        return input;
+        return [input[0] * Value];
     }
 }
