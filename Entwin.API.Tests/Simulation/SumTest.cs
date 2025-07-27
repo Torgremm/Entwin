@@ -27,13 +27,14 @@ public class SumTests
         components.Add( new ConstantComponent(con3, 4));
         components.Add( new ConstantComponent(con4, 5));
 
+        int ii = 0;
         foreach (ISimulatable comp in components)
         {
-            connections.Add(new Connection(comp.Id, 6));
+            connections.Add(new Connection(comp.Id, 6, 0, ii));
+            ++ii;
         }
 
         components.Add(new SumComponent(new List<bool>{true,true,false,true}, 6)); // con1 + con2 - con3 + con4
-        //Request should sort Id ? and send boolean according to ascending Id?
 
         var outputConnection = new Connection(6, -1);
 

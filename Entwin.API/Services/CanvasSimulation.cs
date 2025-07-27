@@ -10,19 +10,18 @@ public static class CanvasSimulation
         var outputs = req.Components.ToDictionary(
             component => component.Id,
             component => {
-            var inputsWithIds = req.Connections
-                .Where(c => c.To == component.Id) //Incoming signals
-                .Select(c => new { //Find IDs of components
-                    Id = c.From,
-                    Signal = req.PreviousSignals.TryGetValue(c, out var signal) ? signal : 0.0
-                })
-                .ToArray();
-
-            var rawInput = inputsWithIds.Select(x => x.Signal).ToArray();
-            var rawIds = inputsWithIds.Select(x => x.Id).ToArray();
-            var sortedInput = component.SortedInput(rawInput, rawIds);
-            return component.SimulateStep(sortedInput, req.settings.Time);
-            });
+                var incomingConnections = req.Connections
+                    .Where(c => c.To == component.Id)
+                    .ToArray();
+    
+                double[] sortedInput = new double[incomingConnections.Length];
+                foreach (Connection c in incomingConnections){
+                    var signal = req.PreviousSignals.TryGetValue(c, out var s) ? s : 0.0;
+                    sortedInput[c.To_Position] = signal;
+                }
+                return component.SimulateStep(sortedInput, req.settings.Time);
+            }
+        );
 
 
         var currentSignals = req.Connections
