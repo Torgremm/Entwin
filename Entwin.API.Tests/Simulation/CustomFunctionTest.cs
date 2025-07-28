@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 
 namespace Entwin.API.Tests.Simulation;
 
-[Collection("SimulationTests")]
+[Trait("Category","Simulation")]
 public class CustomFunctionTests
 {
     [Fact]

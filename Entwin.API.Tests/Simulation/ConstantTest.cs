@@ -7,7 +7,7 @@ using Entwin.API.Controllers;
 using ScottPlot;
 
 namespace Entwin.API.Tests.Simulation;
-[Collection("SimulationTests")]
+[Trait("Category","Simulation")]
 public class ConstantTests
 {
     [Fact]
