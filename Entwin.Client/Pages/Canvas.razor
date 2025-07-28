@@ -1,0 +1,113 @@
+﻿@page "/canvas"
+@using Microsoft.AspNetCore.Components.Web
+@inject Microsoft.JSInterop.IJSRuntime JS
+
+<h3>
+    <ul style="font-size: 0.8em; color: gray;">
+        @foreach (var cell in cells)
+        {
+            <li>Box @cell.Id — X: @cell.X, Y: @cell.Y</li>
+        }
+    </ul>
+</h3>
+
+<div @ref="canvasRef"
+     @onmousemove="OnMouseMove" 
+     @onmouseup="OnMouseUp" 
+     @onmouseleave="OnMouseUp"
+     style="position: relative; width: 100%; height: 80vh; border: 2px solid #444; background: #f0f0f0; user-select: none;">
+    @foreach (var cell in cells)
+    {
+        <div class="draggable-box"
+             style="position: absolute; left:@(cell.X)px; top:@(cell.Y)px; width: 100px; height: 100px; 
+                    background-color: #4a90e2; color: white; display: flex; align-items: center; 
+                    justify-content: center; border-radius: 8px; cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"
+             @onmousedown="(e => OnMouseDown(e, cell.Id))">
+            Box @cell.Id
+        </div>
+    }
+</div>
+
+@code {
+    private DomRect canvasRectCache = null;
+    public class DomRect
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+        public double Top { get; set; }
+        public double Right { get; set; }
+        public double Bottom { get; set; }
+        public double Left { get; set; }
+    }
+
+    private ElementReference canvasRef;
+    private double canvasWidth;
+    private double canvasHeight;
+
+    private List<Cell> cells = new()
+    {
+        new Cell { Id = 1, X = 50, Y = 50 },
+    };
+
+    private int? draggingCellId = null;
+    private double offsetX, offsetY;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var size = await JS.InvokeAsync<DomRect>("getBoundingClientRect", new object[]{canvasRef});
+            canvasWidth = size.Width;
+            canvasHeight = size.Height;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnMouseDown(MouseEventArgs e, int cellId)
+    {
+        canvasRectCache = await JS.InvokeAsync<DomRect>("getBoundingClientRect", new object[] { canvasRef });
+
+        draggingCellId = cellId;
+
+        var relativeX = e.ClientX - canvasRectCache.Left;
+        var relativeY = e.ClientY - canvasRectCache.Top;
+
+        var cell = cells.First(c => c.Id == cellId);
+
+        offsetX = relativeX - cell.X;
+        offsetY = relativeY - cell.Y;
+    }
+
+    private void OnMouseMove(MouseEventArgs e)
+    {
+        if (draggingCellId.HasValue && canvasRectCache != null)
+        {
+            var relativeX = e.ClientX - canvasRectCache.Left - offsetX;
+            var relativeY = e.ClientY - canvasRectCache.Top - offsetY;
+
+            var clampedX = Math.Clamp(relativeX, 0, canvasRectCache.Width - 100);
+            var clampedY = Math.Clamp(relativeY, 0, canvasRectCache.Height - 100);
+
+            var cell = cells.First(c => c.Id == draggingCellId.Value);
+            cell.X = Math.Round(clampedX);
+            cell.Y = Math.Round(clampedY);
+
+            StateHasChanged();
+        }
+    }
+
+
+    private void OnMouseUp(MouseEventArgs e)
+    {
+        draggingCellId = null;
+    }
+
+    class Cell
+    {
+        public int Id { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+}
