@@ -11,12 +11,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddHealthChecks();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowClientApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5265", "https://localhost:5265") 
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped(sp =>
-    new HttpClient { BaseAddress = new Uri("http://localhost:5265/") });
 
 var app = builder.Build();
+app.UseCors("AllowClientApp");
 
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Testing")
 {
