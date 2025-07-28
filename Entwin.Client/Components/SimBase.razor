@@ -1,0 +1,21 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="draggable-box"
+     @onmousedown="HandleMouseDown"
+     style="position: absolute; left:@(X)px; top:@(Y)px; width: 100px; height: 100px; 
+            background-color: #4a90e2; color: white; display: flex; align-items: center; 
+            justify-content: center; border-radius: 8px; cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+    Box @Id
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter] public double X { get; set; }
+    [Parameter] public double Y { get; set; }
+    [Parameter] public EventCallback<(int Id, MouseEventArgs e)> OnStartDrag { get; set; }
+
+    private Task HandleMouseDown(MouseEventArgs e)
+    {
+        return OnStartDrag.InvokeAsync((Id, e));
+    }
+}

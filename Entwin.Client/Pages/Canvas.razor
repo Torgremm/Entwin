@@ -1,6 +1,6 @@
 ﻿@page "/canvas"
 @using Microsoft.AspNetCore.Components.Web
-@inject Microsoft.JSInterop.IJSRuntime JS
+@inject IJSRuntime JS
 
 <h3>
     <ul style="font-size: 0.8em; color: gray;">
@@ -12,70 +12,55 @@
 </h3>
 
 <div @ref="canvasRef"
-     @onmousemove="OnMouseMove" 
-     @onmouseup="OnMouseUp" 
+     @onmousemove="OnMouseMove"
+     @onmouseup="OnMouseUp"
      @onmouseleave="OnMouseUp"
      style="position: relative; width: 100%; height: 80vh; border: 2px solid #444; background: #f0f0f0; user-select: none;">
+    
     @foreach (var cell in cells)
     {
-        <div class="draggable-box"
-             style="position: absolute; left:@(cell.X)px; top:@(cell.Y)px; width: 100px; height: 100px; 
-                    background-color: #4a90e2; color: white; display: flex; align-items: center; 
-                    justify-content: center; border-radius: 8px; cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"
-             @onmousedown="(e => OnMouseDown(e, cell.Id))">
-            Box @cell.Id
-        </div>
+        <SimBase Id="@cell.Id"
+                 X="@cell.X"
+                 Y="@cell.Y"
+                 OnStartDrag="OnMouseDown" />
     }
 </div>
 
 @code {
-    private DomRect canvasRectCache = null;
-    public class DomRect
-    {
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Width { get; set; }
-        public double Height { get; set; }
-        public double Top { get; set; }
-        public double Right { get; set; }
-        public double Bottom { get; set; }
-        public double Left { get; set; }
-    }
-
     private ElementReference canvasRef;
-    private double canvasWidth;
-    private double canvasHeight;
+    private DomRect canvasRectCache;
+    private double offsetX, offsetY;
+    private int? draggingCellId = null;
 
     private List<Cell> cells = new()
     {
         new Cell { Id = 1, X = 50, Y = 50 },
+        new Cell { Id = 2, X = 200, Y = 150 }
     };
-
-    private int? draggingCellId = null;
-    private double offsetX, offsetY;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var size = await JS.InvokeAsync<DomRect>("getBoundingClientRect", new object[]{canvasRef});
-            canvasWidth = size.Width;
-            canvasHeight = size.Height;
+            canvasRectCache = await JS.InvokeAsync<DomRect>("getBoundingClientRect", canvasRef);
             StateHasChanged();
         }
     }
 
-    private async Task OnMouseDown(MouseEventArgs e, int cellId)
+    private async Task OnMouseDown((int Id, MouseEventArgs e) args)
     {
-        canvasRectCache = await JS.InvokeAsync<DomRect>("getBoundingClientRect", new object[] { canvasRef });
+        var (cellId, e) = args;
 
+        if (canvasRectCache == null)
+            canvasRectCache = await JS.InvokeAsync<DomRect>("getBoundingClientRect", canvasRef);
+            
         draggingCellId = cellId;
-
+    
         var relativeX = e.ClientX - canvasRectCache.Left;
         var relativeY = e.ClientY - canvasRectCache.Top;
-
+    
         var cell = cells.First(c => c.Id == cellId);
-
+    
         offsetX = relativeX - cell.X;
         offsetY = relativeY - cell.Y;
     }
@@ -98,16 +83,33 @@
         }
     }
 
-
     private void OnMouseUp(MouseEventArgs e)
     {
         draggingCellId = null;
     }
 
-    class Cell
+    public class Cell
     {
         public int Id { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
+    }
+
+    public class DomRect
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+        public double Top { get; set; }
+        public double Right { get; set; }
+        public double Bottom { get; set; }
+        public double Left { get; set; }
+    }
+
+    public class MouseCoords
+    {
+        public double ClientX { get; set; }
+        public double ClientY { get; set; }
     }
 }

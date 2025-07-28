@@ -28,6 +28,21 @@
     </div>
     <script>
         window.getBoundingClientRect = (element) => {
+            return element.getBoundingClientRect();
+        };
+    
+        window.getMouseCoords = () => {
+            return new Promise(resolve => {
+                document.addEventListener('mousemove', function handler(e) {
+                    resolve({ clientX: e.clientX, clientY: e.clientY });
+                    document.removeEventListener('mousemove', handler);
+                });
+            });
+        };
+    </script>
+
+    <script>
+        window.getBoundingClientRect = (element) => {
           if (!element) return null;
           const rect = element.getBoundingClientRect();
           return {
