@@ -231,6 +231,9 @@
         if(_dragSource.Id == toCellId)
             return;
 
+        if(_connections.Any(c => c.ToCellId == toCellId && c.ToInputIndex == toInputIndex))
+            return;
+
         if (_isDraggingOutput)
         {
             var connection = new Connection() {
