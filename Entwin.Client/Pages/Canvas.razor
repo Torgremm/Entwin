@@ -14,6 +14,8 @@
      @onmousemove="OnMouseMove"
      @onmouseup="OnMouseUp"
      @onmouseleave="OnMouseUp"
+     @onkeydown="HandleKeyDown"
+     tabindex="0"
      style="position: relative; width: 100%; height: 80vh; border: 2px solid #444; background: #f0f0f0; user-select: none;">
     @foreach (var cell in cells)
     {
@@ -25,18 +27,27 @@
     }
 
     <svg style="position:absolute; top:0; left:0; width:100%; height:80vh; pointer-events:none;">
-        @foreach (var conn in _connections)
+         @foreach (var conn in _connections)
         {
             var fromCell = cells.First(c => c.Id == conn.FromCellId);
             var toCell = cells.First(c => c.Id == conn.ToCellId);
 
-            var fromX = fromCell.X + 100 + 6;
-            var fromY = fromCell.Y + 8 + conn.FromOutputIndex * (100.0 / (fromCell.OutputCount + 1)) + 6;
+            int fromX = (int)(fromCell.X + 100) + 6;
+            int fromY = (int)(fromCell.Y + 8 + conn.FromOutputIndex * (100.0 / (fromCell.OutputCount + 1))) + 6;
 
-            var toX = toCell.X - 6;
-            var toY = toCell.Y + 8 + conn.ToInputIndex * (100.0 / (toCell.InputCount + 1)) + 6;
+            int toX = (int)(toCell.X) - 6;
+            int toY = (int)(toCell.Y + 8 + conn.ToInputIndex * (100.0 / (toCell.InputCount + 1))) + 6;
 
-            <line x1="@((int)fromX)" y1="@((int)fromY)" x2="@((int)toX)" y2="@((int)toY)" stroke="black" stroke-width="2" />
+            <DataConnection FromX="@fromX"
+                FromY="@fromY"
+                ToX="@toX"
+                ToY="@toY"
+                FromId="@conn.FromCellId"
+                FromIndex="@conn.FromOutputIndex"
+                ToId="@conn.ToCellId"
+                ToIndex="@conn.ToInputIndex"
+                IsSelected="@conn.IsSelected"
+                OnSelect="@(e => SelectConnection(conn, e))" />
         }
     </svg>
 
@@ -57,7 +68,22 @@
     private ElementReference canvasRef;
     private DomRect canvasRectCache = new();
 
-    private record Connection(int FromCellId, int ToCellId, int FromOutputIndex, int ToInputIndex);
+    public class CellModel
+    {
+        public int Id { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public int InputCount { get; set; }
+        public int OutputCount { get; set; }
+    }
+    private class Connection
+    {
+        public int FromCellId { get; set; }
+        public int ToCellId { get; set; }
+        public int FromOutputIndex { get; set; }
+        public int ToInputIndex { get; set; }
+        public bool IsSelected { get; set; }
+    }
     private List<Connection> _connections = new();
 
 
@@ -165,30 +191,53 @@
         _isDraggingOutput = true;
     }
 
-
-
     private void OnInputDropped((int Id, int Index, MouseEventArgs e) args)
     {   
         if(!_isDraggingOutput)
             return;
             
-        Console.WriteLine($"[DEBUG] TRYING TO DROP");
         var (toCellId, toInputIndex, e) = args;
+
+        if(_dragSource.Id == toCellId)
+            return;
 
         if (_isDraggingOutput)
         {
-            var connection = new Connection(
-                FromCellId: _dragSource.Id,
-                FromOutputIndex: _dragSource.Index,
-                ToCellId: toCellId,
-                ToInputIndex: toInputIndex
-            );
+            var connection = new Connection() {
+                FromCellId = _dragSource.Id,
+                FromOutputIndex = _dragSource.Index,
+                ToCellId = toCellId,
+                ToInputIndex = toInputIndex,
+                IsSelected = false
+            };
 
             _connections.Add(connection);
 
             _isDraggingOutput = false;
         }
 
+    }
+
+    private void SelectConnection(Connection conn, MouseEventArgs e)
+    {
+        bool shiftHeld = e.ShiftKey;
+
+        if (!shiftHeld)
+        {
+            foreach (var c in _connections)
+                c.IsSelected = false;
+        }
+
+        conn.IsSelected = !conn.IsSelected;
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Delete")
+        {
+            _connections.RemoveAll(c => c.IsSelected);
+            StateHasChanged();
+        }
     }
 
     private void GetCursorPosition(MouseEventArgs e){
@@ -199,13 +248,6 @@
         _cursorPosition.Y = (int)relativeY;
     }
 
-    public class CellModel
-    {
-        public int Id { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-        public int InputCount { get; set; }
-        public int OutputCount { get; set; }
-    }
+    
 
 }

@@ -1,0 +1,32 @@
+<line x1="@FromX" y1="@FromY" x2="@ToX" y2="@ToY"
+      stroke="black" stroke-width="2"
+      style="@LineStyle" />
+
+<line @onclick="OnClick"
+      x1="@FromX" y1="@FromY" x2="@ToX" y2="@ToY"
+      stroke="transparent" stroke-width="12"
+      style="cursor:pointer; pointer-events: stroke;" />
+
+@code {
+    [Parameter, EditorRequired] public int FromId { get; set; }
+    [Parameter, EditorRequired] public int FromIndex { get; set; }
+    [Parameter, EditorRequired] public int ToId { get; set; }
+    [Parameter, EditorRequired] public int ToIndex { get; set; }
+    [Parameter, EditorRequired] public double FromX { get; set; }
+    [Parameter, EditorRequired] public double FromY { get; set; }
+    [Parameter, EditorRequired] public double ToX { get; set; }
+    [Parameter, EditorRequired] public double ToY { get; set; }
+
+    [Parameter] public bool IsSelected { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnSelect { get; set; }
+
+    private string LineStyle =>
+        IsSelected
+            ? "stroke: black; stroke-width: 2; filter: drop-shadow(0 0 2px blue);"
+            : "stroke: black; stroke-width: 2;";
+
+    private async Task OnClick(MouseEventArgs e)
+    {
+        await OnSelect.InvokeAsync(e);
+    }
+}
