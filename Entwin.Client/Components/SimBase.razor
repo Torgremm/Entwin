@@ -14,17 +14,69 @@
             cursor:grab;"
      @onmousedown="OnMouseDown">
     Box @Id
+
+    @for (int i = 0; i < OutputCount; i++)
+    {
+        var outputIndex = i;
+        <div style="position:absolute;
+                    right:-8px;
+                    top:@(8 + outputIndex * (100 / (OutputCount + 1)))px;
+                    width:12px;
+                    height:12px;
+                    background-color:#fff;
+                    border:2px solid #000;
+                    border-radius:50%;
+                    cursor:pointer;"
+            @onmousedown="@(e => OnOutputDrag.InvokeAsync((Id, outputIndex, e)))"
+            @onmousedown:stopPropagation="true"
+            >
+        </div>
+    }
+
+    @for (int i = 0; i < InputCount; i++)
+    {
+        var inputIndex = i;
+        <div style="position:absolute;
+                    left:-8px;
+                    top:@(8 + i * (100 / (InputCount + 1)))px;
+                    width:12px;
+                    height:12px;
+                    background-color:#fff;
+                    border:2px solid #000;
+                    border-radius:50%;
+                    cursor:pointer;"
+             @onmouseup="(e) => OnInputMouseUp(inputIndex, e)"
+             @onmouseup:stopPropagation="true"
+             @onmousedown:stopPropagation="true">
+        </div>
+    }
+
+
 </div>
 
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public double X { get; set; }
     [Parameter] public double Y { get; set; }
+    [Parameter] public int OutputCount { get; set; }
+    [Parameter] public int InputCount { get; set; }
 
     [Parameter] public EventCallback<(int Id, MouseEventArgs e)> OnStartDrag { get; set; }
+    [Parameter] public EventCallback<(int Id, int OutputIndex, MouseEventArgs e)> OnOutputDrag { get; set; }
+    [Parameter] public EventCallback<(int Id, int InputIndex, MouseEventArgs e)> OnInputDropped { get; set; }
 
     private async Task OnMouseDown(MouseEventArgs e)
     {
         await OnStartDrag.InvokeAsync((Id, e));
+    }
+
+    private async Task OnOutputDragStart(int outputIndex, MouseEventArgs e)
+    {
+        await OnOutputDrag.InvokeAsync((Id, outputIndex, e));
+    }
+
+    private async Task OnInputMouseUp(int inputIndex, MouseEventArgs e)
+    {
+        await OnInputDropped.InvokeAsync((Id, inputIndex, e));
     }
 }

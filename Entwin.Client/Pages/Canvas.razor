@@ -17,7 +17,39 @@
      style="position: relative; width: 100%; height: 80vh; border: 2px solid #444; background: #f0f0f0; user-select: none;">
     @foreach (var cell in cells)
     {
-        <SimBase Id="@cell.Id" X="@cell.X" Y="@cell.Y" OnStartDrag="OnStartDrag" />
+        <SimBase Id="@cell.Id" X="@cell.X" Y="@cell.Y"
+        InputCount="@cell.InputCount" OutputCount="@cell.OutputCount" 
+        OnStartDrag="OnStartDrag" 
+        OnOutputDrag="OnOutputDrag" 
+        OnInputDropped="OnInputDropped"/>
+    }
+
+    <svg style="position:absolute; top:0; left:0; width:100%; height:80vh; pointer-events:none;">
+        @foreach (var conn in _connections)
+        {
+            var fromCell = cells.First(c => c.Id == conn.FromCellId);
+            var toCell = cells.First(c => c.Id == conn.ToCellId);
+
+            var fromX = fromCell.X + 100 + 6;
+            var fromY = fromCell.Y + 8 + conn.FromOutputIndex * (100.0 / (fromCell.OutputCount + 1)) + 6;
+
+            var toX = toCell.X - 6;
+            var toY = toCell.Y + 8 + conn.ToInputIndex * (100.0 / (toCell.InputCount + 1)) + 6;
+
+            <line x1="@((int)fromX)" y1="@((int)fromY)" x2="@((int)toX)" y2="@((int)toY)" stroke="black" stroke-width="2" />
+        }
+    </svg>
+
+    @if (_isDraggingOutput)
+    {
+        <svg style="position:absolute; top:0; left:0; width:100%; height:80vh; pointer-events:none;">
+            <line x1="@_startPosition.X"
+                  y1="@_startPosition.Y"
+                  x2="@_cursorPosition.X"
+                  y2="@_cursorPosition.Y"
+                  stroke="black"
+                  stroke-width="2" />
+        </svg>
     }
 </div>
 
@@ -25,10 +57,14 @@
     private ElementReference canvasRef;
     private DomRect canvasRectCache = new();
 
-    private List<Cell> cells = new()
+    private record Connection(int FromCellId, int ToCellId, int FromOutputIndex, int ToInputIndex);
+    private List<Connection> _connections = new();
+
+
+    private List<CellModel> cells = new()
     {
-        new Cell { Id = 1, X = 50, Y = 50 },
-        new Cell { Id = 2, X = 200, Y = 150 }
+        new CellModel { Id = 1, X = 50, Y = 50, OutputCount = 2, InputCount = 0 },
+        new CellModel { Id = 2, X = 200, Y = 150, InputCount = 2, OutputCount = 1 }
     };
 
     private int? draggingCellId = null;
@@ -77,6 +113,9 @@
 
     private void OnMouseMove(MouseEventArgs e)
     {
+        if(_isDraggingOutput)
+            GetCursorPosition(e);
+
         if (draggingCellId.HasValue && canvasRectCache != null)
         {
             var relativeX = e.ClientX - canvasRectCache.Left - offsetX;
@@ -98,12 +137,75 @@
     private void OnMouseUp(MouseEventArgs e)
     {
         draggingCellId = null;
+        _isDraggingOutput = false;
     }
 
-    class Cell
+    private (int Id, int Index) _dragSource;
+    private bool  _isDraggingOutput;
+    private (int X, int Y) _cursorPosition;
+    private (int X, int Y) _startPosition;
+    
+    private async Task OnOutputDrag((int Id, int Index, MouseEventArgs e) args)
+    {
+        var (cellId, outputIndex, e) = args;
+        _dragSource = (cellId, outputIndex);
+
+        if (canvasRectCache == null)
+            canvasRectCache = await JS.InvokeAsync<DomRect>("getBoundingClientRect", canvasRef);
+
+        var cell = cells.First(c => c.Id == cellId);
+
+        var outputX = cell.X + 100 + 6;
+        var spacing = 100.0 / (cell.OutputCount + 1);
+        var outputY = cell.Y + 8 + outputIndex * spacing + 6;
+
+        _startPosition = ((int)outputX, (int)outputY);
+        GetCursorPosition(e);
+
+        _isDraggingOutput = true;
+    }
+
+
+
+    private void OnInputDropped((int Id, int Index, MouseEventArgs e) args)
+    {   
+        if(!_isDraggingOutput)
+            return;
+            
+        Console.WriteLine($"[DEBUG] TRYING TO DROP");
+        var (toCellId, toInputIndex, e) = args;
+
+        if (_isDraggingOutput)
+        {
+            var connection = new Connection(
+                FromCellId: _dragSource.Id,
+                FromOutputIndex: _dragSource.Index,
+                ToCellId: toCellId,
+                ToInputIndex: toInputIndex
+            );
+
+            _connections.Add(connection);
+
+            _isDraggingOutput = false;
+        }
+
+    }
+
+    private void GetCursorPosition(MouseEventArgs e){
+        var relativeX = e.ClientX - canvasRectCache.Left;
+        var relativeY = e.ClientY - canvasRectCache.Top;
+
+        _cursorPosition.X = (int)relativeX;
+        _cursorPosition.Y = (int)relativeY;
+    }
+
+    public class CellModel
     {
         public int Id { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
+        public int InputCount { get; set; }
+        public int OutputCount { get; set; }
     }
+
 }
