@@ -3,9 +3,10 @@
       style="@LineStyle" />
 
 <line @onclick="OnClick"
-      x1="@FromX" y1="@FromY" x2="@ToX" y2="@ToY"
-      stroke="transparent" stroke-width="12"
-      style="cursor:pointer; pointer-events: stroke;" />
+    @onclick:stopPropagation="true"
+    x1="@FromX" y1="@FromY" x2="@ToX" y2="@ToY"
+    stroke="transparent" stroke-width="12"
+    style="cursor:pointer; pointer-events: stroke;" />
 
 @code {
     [Parameter, EditorRequired] public int FromId { get; set; }

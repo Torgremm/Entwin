@@ -1,18 +1,10 @@
 @using Microsoft.AspNetCore.Components.Web
 
-<div style="position:absolute; 
-            left:@(X)px; 
-            top:@(Y)px; 
-            width:100px; 
-            height:100px; 
-            background-color:#4a90e2; 
-            color:white; 
-            display:flex; 
-            align-items:center; 
-            justify-content:center; 
-            border-radius:8px; 
-            cursor:grab;"
-     @onmousedown="OnMouseDown">
+<div style="@BoxStyle"
+     @onmousedown="OnMouseDown"
+     @onclick="OnClick"
+     @onclick:stopPropagation="true"
+     >
     Box @Id
 
     @for (int i = 0; i < OutputCount; i++)
@@ -60,7 +52,24 @@
     [Parameter] public double Y { get; set; }
     [Parameter] public int OutputCount { get; set; }
     [Parameter] public int InputCount { get; set; }
+    [Parameter] public bool IsSelected { get; set; }
 
+    private string BoxStyle =>
+    $@"position:absolute;
+       left:{X}px;
+       top:{Y}px;
+       width:100px;
+       height:100px;
+       background-color:#4a90e2;
+       color:white;
+       display:flex;
+       align-items:center;
+       justify-content:center;
+       border-radius:8px;
+       cursor:grab;
+       {(IsSelected ? "box-shadow: 0 0 6px 2px #3399ff;" : "")}";
+
+    [Parameter] public EventCallback<MouseEventArgs> OnSelect { get; set; }
     [Parameter] public EventCallback<(int Id, MouseEventArgs e)> OnStartDrag { get; set; }
     [Parameter] public EventCallback<(int Id, int OutputIndex, MouseEventArgs e)> OnOutputDrag { get; set; }
     [Parameter] public EventCallback<(int Id, int InputIndex, MouseEventArgs e)> OnInputDropped { get; set; }
@@ -68,6 +77,11 @@
     private async Task OnMouseDown(MouseEventArgs e)
     {
         await OnStartDrag.InvokeAsync((Id, e));
+    }
+
+    private async Task OnClick(MouseEventArgs e)
+    {
+        await OnSelect.InvokeAsync(e);
     }
 
     private async Task OnOutputDragStart(int outputIndex, MouseEventArgs e)
