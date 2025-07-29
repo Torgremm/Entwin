@@ -5,32 +5,32 @@
      @onclick="OnClick"
      @onclick:stopPropagation="true"
      >
-    Box @Id
+    @ComponentData.DisplayName
 
-    @for (int i = 0; i < OutputCount; i++)
+    @for (int i = 0; i < ComponentData.OutputCount; i++)
     {
         var outputIndex = i;
         <div style="position:absolute;
                     right:-8px;
-                    top:@(8 + outputIndex * (100 / (OutputCount + 1)))px;
+                    top:@(8 + outputIndex * (100 / (ComponentData.OutputCount + 1)))px;
                     width:12px;
                     height:12px;
                     background-color:#fff;
                     border:2px solid #000;
                     border-radius:50%;
                     cursor:pointer;"
-            @onmousedown="@(e => OnOutputDrag.InvokeAsync((Id, outputIndex, e)))"
+            @onmousedown="@(e => OnOutputDrag.InvokeAsync((ComponentData.Id, outputIndex, e)))"
             @onmousedown:stopPropagation="true"
             >
         </div>
     }
 
-    @for (int i = 0; i < InputCount; i++)
+    @for (int i = 0; i < ComponentData.InputCount; i++)
     {
         var inputIndex = i;
         <div style="position:absolute;
                     left:-8px;
-                    top:@(8 + i * (100 / (InputCount + 1)))px;
+                    top:@(8 + i * (100 / (ComponentData.InputCount + 1)))px;
                     width:12px;
                     height:12px;
                     background-color:#fff;
@@ -47,17 +47,12 @@
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
-    [Parameter] public double X { get; set; }
-    [Parameter] public double Y { get; set; }
-    [Parameter] public int OutputCount { get; set; }
-    [Parameter] public int InputCount { get; set; }
-    [Parameter] public bool IsSelected { get; set; }
-
+    [Parameter, EditorRequired]
+    public BaseComponentData ComponentData { get; set; } = default!;
     private string BoxStyle =>
     $@"position:absolute;
-       left:{X}px;
-       top:{Y}px;
+       left:{ComponentData.X}px;
+       top:{ComponentData.Y}px;
        width:100px;
        height:100px;
        background-color:#4a90e2;
@@ -67,7 +62,7 @@
        justify-content:center;
        border-radius:8px;
        cursor:grab;
-       {(IsSelected ? "box-shadow: 0 0 6px 2px #3399ff;" : "")}";
+       {(ComponentData.IsSelected ? "box-shadow: 0 0 6px 2px #3399ff;" : "")}";
 
     [Parameter] public EventCallback<MouseEventArgs> OnSelect { get; set; }
     [Parameter] public EventCallback<(int Id, MouseEventArgs e)> OnStartDrag { get; set; }
@@ -76,7 +71,7 @@
 
     private async Task OnMouseDown(MouseEventArgs e)
     {
-        await OnStartDrag.InvokeAsync((Id, e));
+        await OnStartDrag.InvokeAsync((ComponentData.Id, e));
     }
 
     private async Task OnClick(MouseEventArgs e)
@@ -86,11 +81,11 @@
 
     private async Task OnOutputDragStart(int outputIndex, MouseEventArgs e)
     {
-        await OnOutputDrag.InvokeAsync((Id, outputIndex, e));
+        await OnOutputDrag.InvokeAsync((ComponentData.Id, outputIndex, e));
     }
 
     private async Task OnInputMouseUp(int inputIndex, MouseEventArgs e)
     {
-        await OnInputDropped.InvokeAsync((Id, inputIndex, e));
+        await OnInputDropped.InvokeAsync((ComponentData.Id, inputIndex, e));
     }
 }

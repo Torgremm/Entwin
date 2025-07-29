@@ -19,32 +19,42 @@
     style="position: relative; width: 100%; height: 80vh; border: 2px solid #444; background: #f0f0f0; user-select: none;">
     @foreach (var cell in _cells)
     {
-        <SimBase Id="@cell.Id" X="@cell.X" Y="@cell.Y"
-        InputCount="@cell.InputCount" OutputCount="@cell.OutputCount" 
-        OnStartDrag="OnStartDrag" 
-        OnOutputDrag="OnOutputDrag" 
-        OnInputDropped="OnInputDropped"
+        <SimBase
+        ComponentData="cell"
         OnSelect="@(e => SelectComponent(cell, e))"
-        IsSelected="@cell.IsSelected"
+        OnStartDrag="OnStartDrag"
+        OnOutputDrag="OnOutputDrag"
+        OnInputDropped="OnInputDropped"
         />
     }
 
     @if (showContextMenu)
     {
-        <div style="position:absolute; left:@(_cursorPosition.X)px; top:@(_cursorPosition.Y)px; background:#fff; border:1px solid #ccc; z-index:1000;"
-             @onmouseleave="() => showContextMenu = false">
-            <div style="padding:5px; cursor:pointer;" @onmouseover="() => showSubMenu = true">
-                Add →
-            </div>
+        <div style="position:absolute; left:@(_cursorPosition.X)px; top:@(_cursorPosition.Y)px; background:#fff; border:1px solid #ccc; padding:5px; user-select:none;">
+            <div style="position: relative; display: inline-block;"
+                 @onmouseenter="() => showSubMenu = true"
+                 @onmouseleave="() => showSubMenu = false">
+                <span style="cursor:pointer;">
+                    Add ▸
+                </span>
 
-            @if (showSubMenu)
-            {
-                <div style="position:absolute; top:0; left:100%; background:#f9f9f9; border:1px solid #ccc;">
-                    <div style="padding:5px; cursor:pointer;" @onclick="AddSimBase">SimBase</div>
-                </div>
-            }
+                @if (showSubMenu)
+                {
+                    <div style="position:absolute; left:100%; top:0; background:#eee; border:1px solid #aaa; padding:5px; z-index:1000; white-space: nowrap;">
+                        @foreach (var comp in availableComponents)
+                        {
+                            <div style="padding:2px 10px; cursor:pointer;"
+                                 @onclick="() => AddComponent(comp.ComponentType)">
+                                @comp.Name
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
         </div>
     }
+
+
 
 
     <svg style="position:absolute; top:0; left:0; width:100%; height:80vh; pointer-events:none;">
@@ -89,16 +99,17 @@
     private ElementReference canvasRef;
     private DomRect canvasRectCache = new();
 
-    public class CellModel
+    private readonly List<(string Name, Type ComponentType)> availableComponents = new()
     {
-        public int Id { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-        public int InputCount { get; set; }
-        public int OutputCount { get; set; }
-        public bool IsSelected {get;set;}
-    }
-    private List<CellModel> _cells = new();
+        ("Constant", typeof(Constant)),
+        ("Gain", typeof(Gain)),
+        ("CustomFunction", typeof(CustomFunction)),
+        ("Step", typeof(Step)),
+        ("Sum", typeof(Sum)),
+        ("TransferFunction", typeof(TransferFunction))
+    };
+
+    private List<BaseComponentData> _cells = new();
 
     private class Connection
     {
@@ -252,7 +263,7 @@
         conn.IsSelected = !conn.IsSelected;
     }
 
-    private void SelectComponent(CellModel cell, MouseEventArgs e)
+    private void SelectComponent(BaseComponentData cell, MouseEventArgs e)
     {
         bool shiftHeld = e.ShiftKey;
 
@@ -293,21 +304,22 @@
         GetCursorPosition(e);
         showContextMenu = true;
     }
-    private void AddSimBase()
+    private void AddComponent(Type componentType)
     {
         var newId = _cells.Any() ? _cells.Max(c => c.Id) + 1 : 1;
 
-        _cells.Add(new CellModel
+        if (Activator.CreateInstance(componentType) is BaseComponentData newCell)
         {
-            Id = newId,
-            X = _cursorPosition.X,
-            Y = _cursorPosition.Y,
-            InputCount = 1,
-            OutputCount = 1
-        });
+            newCell.Id = newId;
+            newCell.X = _cursorPosition.X;
+            newCell.Y = _cursorPosition.Y;
+
+            _cells.Add(newCell);
+        }
 
         showContextMenu = false;
         showSubMenu = false;
+        StateHasChanged();
     }
 
 
@@ -316,7 +328,11 @@
         if (e.Key == "Delete")
         {
             _connections.RemoveAll(c => c.IsSelected);
+
+            var selectedCellIds = _cells.Where(c => c.IsSelected).Select(c => c.Id).ToHashSet();
+            _connections.RemoveAll(c => selectedCellIds.Contains(c.FromCellId) || selectedCellIds.Contains(c.ToCellId));
             _cells.RemoveAll(c => c.IsSelected);
+
             StateHasChanged();
         }
     }
