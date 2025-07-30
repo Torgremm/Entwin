@@ -1,0 +1,40 @@
+@using Entwin.Client.Components
+@using Microsoft.AspNetCore.Components
+
+<div class="editor-panel">
+    <h4>Sum Component Editor</h4>
+
+    <div class="form-group">
+        <label>Signs:</label>
+        <input type="text"
+               class="form-control"
+               @bind="Component.Signs"
+               @bind:event="oninput" />
+        <small class="form-text text-muted">
+            Use '+' or '-' per input (e.g., <code>++</code> for A + B, <code>+-</code> for A - B)
+        </small>
+    </div>
+
+    <div class="form-actions">
+        <button class="btn btn-primary" @onclick="Apply">Apply</button>
+        <button class="btn btn-secondary" @onclick="Close">Close</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Sum Component { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private void Apply()
+    {
+        Component.DisplayName = Component.Signs;
+    }
+
+    private void Close()
+    {
+        OnClose.InvokeAsync();
+    }
+}

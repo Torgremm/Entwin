@@ -68,6 +68,8 @@
     [Parameter] public EventCallback<(int Id, MouseEventArgs e)> OnStartDrag { get; set; }
     [Parameter] public EventCallback<(int Id, int OutputIndex, MouseEventArgs e)> OnOutputDrag { get; set; }
     [Parameter] public EventCallback<(int Id, int InputIndex, MouseEventArgs e)> OnInputDropped { get; set; }
+    [Parameter] public EventCallback<BaseComponentData> OnComponentSelected { get; set; }
+
 
     private async Task OnMouseDown(MouseEventArgs e)
     {
@@ -77,6 +79,7 @@
     private async Task OnClick(MouseEventArgs e)
     {
         await OnSelect.InvokeAsync(e);
+        await OnComponentSelected.InvokeAsync(ComponentData);
     }
 
     private async Task OnOutputDragStart(int outputIndex, MouseEventArgs e)

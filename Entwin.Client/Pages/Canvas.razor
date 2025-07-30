@@ -1,4 +1,5 @@
-﻿@page "/canvas"
+﻿@using Entwin.Client.Components.Editors
+@page "/canvas"
 @inject IJSRuntime JS
 
 <h3>
@@ -25,6 +26,7 @@
         OnStartDrag="OnStartDrag"
         OnOutputDrag="OnOutputDrag"
         OnInputDropped="OnInputDropped"
+        OnComponentSelected="ShowEditor"
         />
     }
 
@@ -94,6 +96,28 @@
         </svg>
     }
 </div>
+@if (_selectedComponent != null)
+{
+    <div style="
+        position: absolute;
+        top: @((int)_selectedComponent.Y - 200)px;
+        left: @((int)_selectedComponent.X + 100)px;
+        z-index: 2000;
+        width: 300px;
+        max-height: 90vh;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 10px;
+        overflow-y: auto;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        pointer-events: auto;">
+        
+        <DynamicComponent Type="@GetEditorType(_selectedComponent)" Parameters="GetParameters(_selectedComponent)" />
+    </div>
+}
+
+
 
 @code {
     private ElementReference canvasRef;
@@ -200,6 +224,8 @@
     private bool  _isDraggingOutput;
     private (int X, int Y) _cursorPosition;
     private (int X, int Y) _startPosition;
+
+    private BaseComponentData? _selectedComponent;
     
     private async Task OnOutputDrag((int Id, int Index, MouseEventArgs e) args)
     {
@@ -251,6 +277,58 @@
 
     }
 
+    private Dictionary<string, object> GetParameters(BaseComponentData component)
+    {
+        return component switch
+        {
+            TransferFunction tf => new Dictionary<string, object> {
+                ["Component"] = tf,
+                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
+            },
+            Step s => new Dictionary<string, object> {
+                ["Component"] = s,
+                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
+            },
+            Gain g => new Dictionary<string, object> {
+                ["Component"] = g,
+                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
+            },
+            Sum su => new Dictionary<string, object> {
+                ["Component"] = su,
+                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
+            },
+            CustomFunction cf => new Dictionary<string, object> {
+                ["Component"] = cf,
+                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
+            },
+            Constant c => new Dictionary<string, object> {
+                ["Component"] = c,
+                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
+            },
+            _ => new Dictionary<string, object>()
+        };
+    }
+
+    private Type GetEditorType(BaseComponentData component)
+    {
+        return component switch
+        {
+            TransferFunction => typeof(TransferFunctionEditor),
+            Gain => typeof(GainEditor),
+            Constant => typeof(ConstantEditor),
+            Step => typeof(StepEditor),
+            Sum => typeof(SumEditor),
+            CustomFunction => typeof(CustomFunctionEditor)
+        };
+    }
+
+    private void ShowEditor(BaseComponentData component)
+    {
+        _selectedComponent = component;
+    }
+
+
+
     private void SelectConnection(Connection conn, MouseEventArgs e)
     {
         bool shiftHeld = e.ShiftKey;
@@ -277,8 +355,12 @@
             foreach (var c in _connections)
                 c.IsSelected = false;
         }
-
         cell.IsSelected = !cell.IsSelected;
+
+        if(cell.IsSelected)
+            _selectedComponent = cell;
+
+        
     }
 
     private void OnCanvasClick(MouseEventArgs e)
@@ -294,6 +376,7 @@
                 cell.IsSelected = false;
             }
 
+            _selectedComponent = null;
             showContextMenu = false;
             StateHasChanged();
         }

@@ -1,0 +1,62 @@
+@using Entwin.Client.Components
+@using Microsoft.AspNetCore.Components
+
+<div class="editor-panel">
+    <h4>Transfer Function Editor</h4>
+
+    <div class="form-group">
+        <label>Numerator (comma-separated):</label>
+        <input class="form-control"
+               @bind="_numeratorText"
+               @bind:event="oninput" />
+    </div>
+
+    <div class="form-group">
+        <label>Denominator (comma-separated):</label>
+        <input class="form-control"
+               @bind="_denominatorText"
+               @bind:event="oninput" />
+    </div>
+
+    <div class="form-actions">
+        <button class="btn btn-primary" @onclick="Apply">Apply</button>
+        <button class="btn btn-secondary" @onclick="Close">Close</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TransferFunction Component { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private string _numeratorText = "";
+    private string _denominatorText = "";
+
+    protected override void OnInitialized()
+    {
+        _numeratorText = string.Join(",", Component.Numerator);
+        _denominatorText = string.Join(",", Component.Denominator);
+    }
+
+    private void Apply()
+    {
+        Component.Numerator = ParseIntArray(_numeratorText);
+        Component.Denominator = ParseIntArray(_denominatorText);
+
+        Component.DisplayName = $"{Component.Numerator[0]} / s + {Component.Denominator[1]}";
+    }
+
+    private void Close()
+    {
+        OnClose.InvokeAsync();
+    }
+
+    private static int[] ParseIntArray(string text)
+    {
+        return text.Split(",", StringSplitOptions.RemoveEmptyEntries)
+                   .Select(s => int.TryParse(s.Trim(), out var n) ? n : 0)
+                   .ToArray();
+    }
+}

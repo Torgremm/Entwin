@@ -1,0 +1,37 @@
+@using Entwin.Client.Components
+@using Microsoft.AspNetCore.Components
+
+<div class="editor-panel">
+    <h4>Constant Editor</h4>
+
+    <div class="form-group">
+        <label>Value:</label>
+        <input type="number"
+               class="form-control"
+               @bind="Component.Value"
+               @bind:event="oninput" />
+    </div>
+
+    <div class="form-actions">
+        <button class="btn btn-primary" @onclick="Apply">Apply</button>
+        <button class="btn btn-secondary" @onclick="Close">Close</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Constant Component { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private void Apply()
+    {
+        Component.DisplayName = Component.Value.ToString("G");
+    }
+
+    private void Close()
+    {
+        OnClose.InvokeAsync();
+    }
+}
