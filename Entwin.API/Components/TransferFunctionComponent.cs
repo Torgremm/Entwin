@@ -1,5 +1,6 @@
 using Entwin.API.Models;
 using Entwin.API.Services;
+using Entwin.Shared.Components;
 
 namespace Entwin.API.Components;
 
@@ -15,6 +16,16 @@ public class TransferFunctionComponent : ISimulatable
     private List<double> _outputHistory = new();
     private double _currentTime = 0.0;
 
+    public TransferFunctionComponent(TransferFunctionComponentDTO dto, SimulationSettings settings)
+    {
+        Id = dto.Id;
+        sNumerator = dto.sNumerator;
+        sDenominator = dto.sDenominator;
+
+        var (b, a) = DiscretizeEuler(dto.sNumerator, dto.sDenominator, settings.TimeStep);
+        zNumerator = b.ToList();
+        zDenominator = a.ToList();
+    }
     public TransferFunctionComponent(List<double> num, List<double> den, int id, SimulationRequest request)
     {
         Id = id;
