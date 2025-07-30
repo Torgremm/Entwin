@@ -100,7 +100,7 @@
 {
     <div style="
         position: absolute;
-        top: @((int)_selectedComponent.Y - 200)px;
+        top: @(_selectedComponent.Y - 200 > 0 ? (int)_selectedComponent.Y - 200 : (int)_selectedComponent.Y + 230)px;
         left: @((int)_selectedComponent.X + 100)px;
         z-index: 2000;
         width: 300px;
@@ -279,33 +279,13 @@
 
     private Dictionary<string, object> GetParameters(BaseComponentData component)
     {
-        return component switch
+        if (component == null)
+        return new Dictionary<string, object>();
+
+        return new Dictionary<string, object>
         {
-            TransferFunction tf => new Dictionary<string, object> {
-                ["Component"] = tf,
-                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
-            },
-            Step s => new Dictionary<string, object> {
-                ["Component"] = s,
-                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
-            },
-            Gain g => new Dictionary<string, object> {
-                ["Component"] = g,
-                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
-            },
-            Sum su => new Dictionary<string, object> {
-                ["Component"] = su,
-                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
-            },
-            CustomFunction cf => new Dictionary<string, object> {
-                ["Component"] = cf,
-                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
-            },
-            Constant c => new Dictionary<string, object> {
-                ["Component"] = c,
-                ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
-            },
-            _ => new Dictionary<string, object>()
+            ["Component"] = component,
+            ["OnClose"] = EventCallback.Factory.Create(this, () => _selectedComponent = null)
         };
     }
 
@@ -318,7 +298,8 @@
             Constant => typeof(ConstantEditor),
             Step => typeof(StepEditor),
             Sum => typeof(SumEditor),
-            CustomFunction => typeof(CustomFunctionEditor)
+            CustomFunction => typeof(CustomFunctionEditor),
+            _ => throw new ArgumentException($"No editor type defined for component of type {component.GetType().Name}")
         };
     }
 
