@@ -30,7 +30,7 @@ namespace Entwin.API.Components
             {
                 userExpression = _expressionString,
             };
-            return [CustomFunctionSimulation.SimulateCustomFunction(req, input)];
+            return [CustomFunctionSimulation.SimulateCustomFunction(req, input, currentTime)];
         }
 
         private void ValidateExpression(string expr)

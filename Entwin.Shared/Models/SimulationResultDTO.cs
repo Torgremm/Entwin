@@ -8,7 +8,7 @@ public class SimulationResultDTO
     [JsonConverter(typeof(SignalKeyDictionaryConverter<List<double>>))]
     public Dictionary<SignalKey, List<double>> Signals { get; set; } = new();
 
-    public List<double> Time { get; set; }
+    public List<double>? Time { get; set; }
 }
 
 public record SignalKey(int FromId, int FromIndex, int ToId, int ToIndex);

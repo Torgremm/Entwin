@@ -17,6 +17,10 @@ public class SumComponent : ISimulatable
     {
         List<bool> signs = new();
         Id = sum.Id;
+
+        if (sum.Signs == null)
+            throw new Exception("Misconfigured summation, must be a string of '+' and '-");
+            
         foreach (char c in sum.Signs)
         {
             signs.Add(c == '+' ? true : false);

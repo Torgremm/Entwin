@@ -4,6 +4,6 @@ namespace Entwin.Shared.Components
     {
         public int Id { get; set; }
 
-        public string Signs;
+        public string? Signs { get; set; }
     }
 }

@@ -6,7 +6,7 @@ namespace Entwin.API.Services;
 
 public static class CustomFunctionSimulation
 {
-    public static double SimulateCustomFunction(CustomFunctionRequest req, double[] input)
+    public static double SimulateCustomFunction(CustomFunctionRequest req, double[] input, double currentTime)
     {
         string expressionString = req.userExpression;
 
@@ -18,7 +18,7 @@ public static class CustomFunctionSimulation
             context.Variables[$"input{i}"] = input[i];
         }
 
-        context.Variables["time"] = req.time;
+        context.Variables["time"] = currentTime;
 
         IDynamicExpression e;
         try
