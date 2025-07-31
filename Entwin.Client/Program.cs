@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Entwin.Client;
+using Blazorise;
+using Blazorise.Bootstrap5;
+using Blazorise.Icons.FontAwesome;
+using Entwin.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -13,6 +17,13 @@ if (string.IsNullOrWhiteSpace(apiBaseUrl))
 {
     throw new Exception("API base URL not configured in appsettings.json");
 }
+builder.Services
+    .AddBlazorise(options => { options.Immediate = true; })
+    .AddBootstrap5Providers()
+    .AddFontAwesomeIcons();
+
+builder.Services.AddScoped<SimulationState>();
+
 builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
 
