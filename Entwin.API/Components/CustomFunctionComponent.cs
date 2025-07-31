@@ -8,7 +8,6 @@ namespace Entwin.API.Components
     public class CustomFunctionComponent : ISimulatable
     {
         private readonly string _expressionString;
-        private SimulationSettings _settings;
         public int Id { get; set; }
 
         public CustomFunctionComponent(string userExpression, int id, SimulationRequest req)
@@ -17,7 +16,6 @@ namespace Entwin.API.Components
 
             Id = id;
 
-            _settings = req.settings;
             ValidateExpression(_expressionString);
         }
         public CustomFunctionComponent(CustomFunctionDTO func)
@@ -31,7 +29,6 @@ namespace Entwin.API.Components
             CustomFunctionRequest req = new()
             {
                 userExpression = _expressionString,
-                time = _settings.Time
             };
             return [CustomFunctionSimulation.SimulateCustomFunction(req, input)];
         }

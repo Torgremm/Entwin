@@ -5,10 +5,10 @@ namespace Entwin.Shared.Models;
 
 public class SimulationResultDTO
 {
-    [JsonConverter(typeof(SignalKeyDictionaryConverter<double>))]
-    public Dictionary<SignalKey, double> Signals { get; set; } = new();
+    [JsonConverter(typeof(SignalKeyDictionaryConverter<List<double>>))]
+    public Dictionary<SignalKey, List<double>> Signals { get; set; } = new();
 
-    public double Time { get; set; }
+    public List<double> Time { get; set; }
 }
 
 public record SignalKey(int FromId, int FromIndex, int ToId, int ToIndex);

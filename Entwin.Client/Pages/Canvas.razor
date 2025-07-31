@@ -85,6 +85,7 @@
                 ToId="@conn.ToCellId"
                 ToIndex="@conn.ToInputIndex"
                 IsSelected="@conn.IsSelected"
+                IsActive="@ConnectionValue(conn.FromCellId,conn.FromOutputIndex,conn.ToCellId,conn.ToInputIndex)"
                 OnSelect="@(e => SelectConnection(conn, e))" />
         }
     </svg>
@@ -100,6 +101,39 @@
                   stroke-width="2" />
         </svg>
     }
+    @if (showSignalPopup && selectedValues?.Any() == true)
+    {
+        <div style="position: absolute; top: 100px; left: 100px; background: white; border: 1px solid gray; padding: 10px;">
+            <h4>Signal Plot</h4>
+
+            <svg width="400" height="200" style="border: 1px solid #ccc;">
+                @if (selectedTimes != null && selectedValues != null && selectedTimes.Count == selectedValues.Count && selectedValues.Count > 1)
+                {
+                    var minTime = selectedTimes.Min();
+                    var maxTime = selectedTimes.Max();
+                    var minY = selectedValues.Min();
+                    var maxY = selectedValues.Max();
+
+                    var timeRange = maxTime - minTime == 0 ? 1 : maxTime - minTime;
+                    var yRange = maxY - minY == 0 ? 1 : maxY - minY;
+
+                    for (int i = 1; i < selectedValues.Count; i++)
+                    {
+                        var x1 = 400 * (selectedTimes[i - 1] - minTime) / timeRange;
+                        var y1 = 200 - ((selectedValues[i - 1] - minY) / yRange * 180);
+                        var x2 = 400 * (selectedTimes[i] - minTime) / timeRange;
+                        var y2 = 200 - ((selectedValues[i] - minY) / yRange * 180);
+
+                        <line x1="@x1" y1="@y1" x2="@x2" y2="@y2" stroke="green" stroke-width="2" />
+                    }
+                }
+            </svg>
+
+            <button @onclick="() => showSignalPopup = false">Close</button>
+        </div>
+
+    }
+
 </div>
 @if (_selectedComponent != null)
 {
@@ -127,6 +161,7 @@
 @code {
     private ElementReference canvasRef;
     private DomRect canvasRectCache = new();
+    private SimulationResultDTO? _simulationResult;
 
     private readonly List<(string Name, Type ComponentType)> availableComponents = new()
     {
@@ -195,23 +230,23 @@
             if (!response.IsSuccessStatusCode)
             {
                 var msg = await response.Content.ReadAsStringAsync();
-                Console.Error.WriteLine($"❌ Simulation failed: {response.StatusCode} - {msg}");
+                Console.Error.WriteLine($"Simulation failed: {response.StatusCode} - {msg}");
                 return;
             }
 
             var result = await response.Content.ReadFromJsonAsync<SimulationResultDTO>();
             if (result is null)
             {
-                Console.Error.WriteLine("❌ Simulation returned null result.");
+                Console.Error.WriteLine("Simulation returned null result.");
                 return;
             }
 
-            Console.WriteLine("✅ Simulation succeeded.");
-
+            Console.WriteLine("Simulation succeeded.");
+            _simulationResult = result;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"❌ Simulation exception: {ex.Message}");
+            Console.Error.WriteLine($"Simulation exception: {ex.Message}");
         }
     }
 
@@ -378,6 +413,18 @@
         }
 
         conn.IsSelected = !conn.IsSelected;
+
+        if (conn.IsSelected)
+        {
+            var key = new SignalKey(
+                conn.FromCellId,
+                conn.FromOutputIndex,
+                conn.ToCellId,
+                conn.ToInputIndex
+            );
+
+            ShowSignal(key);
+        }
     }
 
     private void SelectComponent(BaseComponentData cell, MouseEventArgs e)
@@ -466,5 +513,32 @@
         _cursorPosition.X = (int)relativeX;
         _cursorPosition.Y = (int)relativeY;
     }
+
+    private bool ConnectionValue(int from, int from_p, int to, int to_p){
+        var key = new SignalKey(
+            from,
+            from_p,
+            to,
+            to_p
+        );
+        return _simulationResult?.Signals.ContainsKey(key) == true;
+    }
+
+    private bool showSignalPopup;
+    private List<double> selectedValues;
+    private List<double> selectedTimes;
+    private SignalKey selectedSignalKey;
+
+    private void ShowSignal(SignalKey key)
+    {
+        if (_simulationResult?.Signals.TryGetValue(key, out var signalValues) ?? false)
+        {
+            selectedTimes = Enumerable.Range(0, signalValues.Count).Select(i => i * 0.1).ToList(); // if you have time step
+            selectedValues = signalValues;
+            selectedSignalKey = key;
+            showSignalPopup = true;
+        }
+    }
+
 
 }

@@ -1,5 +1,5 @@
 <line x1="@FromX" y1="@FromY" x2="@ToX" y2="@ToY"
-      stroke="black" stroke-width="2"
+      stroke="@GetStrokeColor()" stroke-width="2"
       style="@LineStyle" />
 
 <line @onclick="OnClick"
@@ -18,13 +18,17 @@
     [Parameter, EditorRequired] public double ToX { get; set; }
     [Parameter, EditorRequired] public double ToY { get; set; }
 
+
+    [Parameter] public bool IsActive { get; set; }
     [Parameter] public bool IsSelected { get; set; }
     [Parameter] public EventCallback<MouseEventArgs> OnSelect { get; set; }
 
+    private string GetStrokeColor() => IsActive ? "darkgreen" : "gray";
+
     private string LineStyle =>
-        IsSelected
-            ? "stroke: black; stroke-width: 2; filter: drop-shadow(0 0 2px blue);"
-            : "stroke: black; stroke-width: 2;";
+    $"stroke: {(IsActive ? "darkgreen" : "black")}; " +
+    $"stroke-width: 2; " +
+    (IsSelected ? "filter: drop-shadow(0 0 2px blue);" : "");
 
     private async Task OnClick(MouseEventArgs e)
     {

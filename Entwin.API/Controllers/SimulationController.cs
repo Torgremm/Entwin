@@ -14,7 +14,9 @@ public class SimulationController : ControllerBase
     [HttpPost("simulate-step")]
     public IActionResult SimulateStep([FromBody] SimulationRequestDTO reqDTO)
     {
-        var settings = reqDTO.Settings;
+        var settings = new SimulationSettings(reqDTO.Settings);
+        double duration = reqDTO.Settings.Duration;
+        double timeStep = reqDTO.Settings.TimeStep; 
 
         var components = reqDTO.Components
             .Select(dto => ComponentMapper.ConvertDTO(dto, reqDTO))
@@ -24,22 +26,39 @@ public class SimulationController : ControllerBase
             .Select(dto => new Connection(dto))
             .ToList();
 
-        var initialSignals = connections.ToDictionary(conn => conn, _ => 0.0);
-
+        var previousSignals = connections.ToDictionary(conn => conn, _ => 0.0);
         var internalRequest = new SimulationRequest
         {
-            settings = new SimulationSettings(settings),
+            settings = settings,
             Components = components,
             Connections = connections,
-            PreviousSignals = initialSignals
+            PreviousSignals = previousSignals
         };
 
-        var result = CanvasSimulation.SimulateCanvas(internalRequest);
+        var timeSteps = new List<double>();
+        var simulationResults = connections.ToDictionary(conn => conn, _ => new List<double>());
+
+        while (internalRequest.settings.Time < duration)
+        {
+            timeSteps.Add(internalRequest.settings.Time);
+            var stepResult = CanvasSimulation.SimulateCanvas(internalRequest);
+
+            foreach (var conn in connections)
+            {
+                stepResult.ConnectionSignals.TryGetValue(conn, out var signal);
+                simulationResults[conn].Add(signal);
+            }
+
+            internalRequest.PreviousSignals = stepResult.ConnectionSignals;
+            internalRequest.settings.Time += timeStep;
+        }
+
 
         var dto = new SimulationResultDTO
         {
-            Time = result.Time,
-            Signals = result.ConnectionSignals.ToDictionary(
+            Time = timeSteps,
+    
+            Signals = simulationResults.ToDictionary(
                 kvp => new SignalKey(
                     kvp.Key.From,
                     kvp.Key.From_Position,
