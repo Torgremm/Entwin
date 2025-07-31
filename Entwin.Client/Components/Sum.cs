@@ -1,7 +1,7 @@
 using Entwin.Shared.Components;
 namespace Entwin.Client.Components
 {
-    public class Sum : BaseComponentData
+    public class Sum : BaseComponentData, ISimulatableComponent
     {
         public string Signs = "++";
         public Sum()
@@ -11,7 +11,7 @@ namespace Entwin.Client.Components
             OutputCount = 1;
         }
 
-        public SumDTO ToDTO()
+        public SimulatableDTOBase ToDTO()
         {
             return new SumDTO
             {

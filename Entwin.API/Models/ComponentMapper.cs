@@ -6,7 +6,7 @@ namespace Entwin.API.Models
 {
     public static class ComponentMapper
     {
-        public static ISimulatable ConvertDTO(ISimulatableDTO dto, SimulationRequestDTO req)
+        public static ISimulatable ConvertDTO(SimulatableDTOBase dto, SimulationRequestDTO req)
         {
             return dto switch
             {

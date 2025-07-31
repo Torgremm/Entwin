@@ -1,6 +1,6 @@
 namespace Entwin.Shared.Components
 {
-    public class StepDTO : ISimulatableDTO
+    public class StepDTO : SimulatableDTOBase
     {  
         public int Id { get; set; }
         public double StartValue { get; set; }

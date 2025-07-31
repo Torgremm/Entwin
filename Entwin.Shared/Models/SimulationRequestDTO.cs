@@ -21,7 +21,7 @@ public class SimulationSettingsDTO
 public class SimulationRequestDTO
 {
     public SimulationSettingsDTO Settings { get; set; } = new();
-    public List<ISimulatableDTO> Components { get; set; } = new();
+    public List<SimulatableDTOBase> Components { get; set; } = new();
     public List<ConnectionDTO> Connections { get; set; } = new();
     public Dictionary<ConnectionDTO, double> PreviousSignals { get; set; } = new();
 }

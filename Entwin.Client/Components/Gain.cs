@@ -1,7 +1,7 @@
 using Entwin.Shared.Components;
 namespace Entwin.Client.Components
 {
-    public class Gain : BaseComponentData
+    public class Gain : BaseComponentData, ISimulatableComponent
     {
         public double Value { get; set; } = 1;
         public Gain()
@@ -11,7 +11,7 @@ namespace Entwin.Client.Components
             OutputCount = 1;
         }
 
-        public GainDTO ToDTO()
+        public SimulatableDTOBase ToDTO()
         {
             return new GainDTO
             {

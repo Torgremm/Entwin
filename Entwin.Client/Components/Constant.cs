@@ -2,7 +2,7 @@ using Entwin.Shared.Components;
 
 namespace Entwin.Client.Components
 {
-    public class Constant : BaseComponentData
+    public class Constant : BaseComponentData, ISimulatableComponent
     {
         public double Value { get; set; } = 1;
         public Constant()
@@ -12,7 +12,7 @@ namespace Entwin.Client.Components
             OutputCount = 1;
         }
 
-        public ConstantDTO ToDTO()
+        public SimulatableDTOBase ToDTO()
         {
             return new ConstantDTO
             {
