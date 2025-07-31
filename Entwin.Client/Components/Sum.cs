@@ -1,3 +1,4 @@
+using Entwin.Shared.Components;
 namespace Entwin.Client.Components
 {
     public class Sum : BaseComponentData
@@ -8,6 +9,15 @@ namespace Entwin.Client.Components
             DisplayName = "+";
             InputCount = 2;
             OutputCount = 1;
+        }
+
+        public SumDTO ToDTO()
+        {
+            return new SumDTO
+            {
+                Id = this.Id,
+                Signs = this.Signs
+            };
         }
     }
 }

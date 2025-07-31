@@ -1,3 +1,4 @@
+using Entwin.Shared.Components;
 namespace Entwin.Client.Components
 {
     public class Gain : BaseComponentData
@@ -8,6 +9,15 @@ namespace Entwin.Client.Components
             DisplayName = "x" + Value.ToString();
             InputCount = 1;
             OutputCount = 1;
+        }
+
+        public GainDTO ToDTO()
+        {
+            return new GainDTO
+            {
+                Id = this.Id,
+                Value = this.Value
+            };
         }
     }
 }

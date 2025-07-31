@@ -1,18 +1,25 @@
+using Entwin.Shared.Components;
+
 namespace Entwin.API.Components;
 
 public class ConstantComponent : ISimulatable
 {
-    public double value { get; set; } = new();
+    public double Value { get; set; } = new();
     public int Id { get; set; } = new();
 
     public ConstantComponent(double v, int id)
     {
-        value = v;
+        Value = v;
         Id = id;
+    }
+    public ConstantComponent(ConstantDTO constant)
+    {
+        Id = constant.Id;
+        Value = constant.Value;
     }
     public double[] SimulateStep(double[] input, double currentTime)
     {
-        return [value];
+        return [Value];
     }
 
 }

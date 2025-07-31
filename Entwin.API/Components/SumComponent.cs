@@ -1,3 +1,5 @@
+using Entwin.Shared.Components;
+
 namespace Entwin.API.Components;
 
 public class SumComponent : ISimulatable
@@ -10,6 +12,18 @@ public class SumComponent : ISimulatable
         Id = id;
         Sign = signs;
     }
+
+    public SumComponent(SumDTO sum)
+    {
+        List<bool> signs = new();
+        Id = sum.Id;
+        foreach (char c in sum.Signs)
+        {
+            signs.Add(c == '+' ? true : false);
+        }
+        Sign = signs;
+    }
+
     public double[] SimulateStep(double[] input, double currentTime)
     {
         double sum = 0;

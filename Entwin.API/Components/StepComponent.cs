@@ -1,3 +1,5 @@
+using Entwin.Shared.Components;
+
 namespace Entwin.API.Components;
 
 public class StepComponent : ISimulatable
@@ -13,6 +15,13 @@ public class StepComponent : ISimulatable
         EndValue = end;
         SwitchTime = s;
         Id = id;
+    }
+    public StepComponent(StepDTO step)
+    {
+        Id = step.Id;
+        StartValue = step.StartValue;
+        EndValue = step.EndValue;
+        SwitchTime = step.SwitchTime;
     }
     public double[] SimulateStep(double[] input, double currentTime)
     {

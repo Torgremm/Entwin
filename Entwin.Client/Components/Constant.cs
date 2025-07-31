@@ -1,3 +1,5 @@
+using Entwin.Shared.Components;
+
 namespace Entwin.Client.Components
 {
     public class Constant : BaseComponentData
@@ -8,6 +10,15 @@ namespace Entwin.Client.Components
             DisplayName = Value.ToString();
             InputCount = 0;
             OutputCount = 1;
+        }
+
+        public ConstantDTO ToDTO()
+        {
+            return new ConstantDTO
+            {
+                Id = this.Id,
+                Value = this.Value
+            };
         }
     }
 }

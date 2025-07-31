@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Entwin.API.Models;
+using Entwin.Shared.Components;
 using Entwin.API.Services;
 
 namespace Entwin.API.Components
@@ -19,6 +20,11 @@ namespace Entwin.API.Components
             _settings = req.settings;
             ValidateExpression(_expressionString);
         }
+        public CustomFunctionComponent(CustomFunctionDTO func)
+    {
+        Id = func.Id;
+        _expressionString = func.UserInput;
+    }
 
         public double[] SimulateStep(double[] input, double currentTime)
         {

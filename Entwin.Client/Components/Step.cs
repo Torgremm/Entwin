@@ -1,3 +1,4 @@
+using Entwin.Shared.Components;
 namespace Entwin.Client.Components
 {
     public class Step : BaseComponentData
@@ -10,6 +11,17 @@ namespace Entwin.Client.Components
             DisplayName = StartValue.ToString() + "/" + EndValue.ToString();
             InputCount = 0;
             OutputCount = 1;
+        }
+
+        public StepDTO ToDTO()
+        {
+            return new StepDTO
+            {
+                Id = this.Id,
+                StartValue = this.StartValue,
+                EndValue = this.EndValue,
+                SwitchTime = this.SwitchTime
+            };
         }
     }
 }

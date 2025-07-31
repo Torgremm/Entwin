@@ -1,3 +1,4 @@
+using Entwin.Shared.Components;
 namespace Entwin.API.Components;
 
 public class GainComponent : ISimulatable
@@ -9,6 +10,11 @@ public class GainComponent : ISimulatable
     {
         Value = v;
         Id = id;
+    }
+    public GainComponent(GainDTO gain)
+    {
+        Id = gain.Id;
+        Value = gain.Value;
     }
     public double[] SimulateStep(double[] input, double currentTime)
     {
