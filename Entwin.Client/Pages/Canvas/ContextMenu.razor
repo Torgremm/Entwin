@@ -1,0 +1,66 @@
+@using Entwin.Client.Pages.Canvas
+
+@if (Show)
+{
+    <div style="position:absolute; left:@(CursorPosition.X)px; top:@(CursorPosition.Y)px;
+                background:#fff; border:1px solid #ccc; padding:5px; user-select:none;
+                z-index:1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+         @onmouseleave="HideMenu">
+         
+        <div style="position: relative; display: inline-block;"
+             @onmouseenter="() => showSubMenu = true"
+             @onmouseleave="() => showSubMenu = false">
+
+            <span style="cursor:pointer;">Add ▸</span>
+
+            @if (showSubMenu)
+            {
+                <div style="position:absolute; left:100%; top:0; background:#eee; border:1px solid #aaa; padding:5px;
+                            z-index:1001; white-space: nowrap;">
+                    @foreach (var comp in Components)
+                    {
+                        <div style="padding:2px 10px; cursor:pointer;"
+                             @onclick="() => Add(comp.ComponentType)">
+                            @comp.Name
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div style="padding:2px 10px; cursor:pointer;"
+             @onclick="Run">
+            Run
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public (int X, int Y) CursorPosition { get; set; }
+    [Parameter] public List<(string Name, Type ComponentType)> Components { get; set; } = [];
+
+    [Parameter] public EventCallback<Type> OnAdd { get; set; }
+    [Parameter] public EventCallback OnRun { get; set; }
+    [Parameter] public EventCallback OnHide { get; set; }
+
+    private bool showSubMenu = false;
+
+    private async Task Add(Type componentType)
+    {
+        await OnAdd.InvokeAsync(componentType);
+        await OnHide.InvokeAsync();
+    }
+
+    private async Task Run()
+    {
+        await OnRun.InvokeAsync();
+        await OnHide.InvokeAsync();
+    }
+
+    private async Task HideMenu()
+    {
+        showSubMenu = false;
+        await OnHide.InvokeAsync();
+    }
+}

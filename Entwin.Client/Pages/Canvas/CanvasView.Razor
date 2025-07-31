@@ -1,0 +1,67 @@
+@using Entwin.Client.Components.Editors
+@using Entwin.Client.Pages.Canvas
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject SimulationState SimState
+
+<div @ref="canvasRef"
+     @onmousemove="OnMouseMove"
+     @onmouseup="OnMouseUp"
+     @onmouseleave="OnMouseUp"
+     @onkeydown="HandleKeyDown"
+     @oncontextmenu:preventDefault="true"
+     @oncontextmenu="ShowContextMenu"
+     @onclick="OnCanvasClick"
+     tabindex="0"
+     style="position: relative; width: 100%; height: 80vh; border: 2px solid #444; background: #f0f0f0; user-select: none;">
+
+    @foreach (var cell in _cells)
+    {
+        <SimBase
+            ComponentData="cell"
+            OnSelect="@(e => SelectComponent(cell, e))"
+            OnStartDrag="OnStartDrag"
+            OnOutputDrag="OnOutputDrag"
+            OnInputDropped="OnInputDropped"
+            OnComponentSelected="ShowEditor" />
+    }
+
+    <ConnectionLine
+        Cells="_cells"
+        Connections="_connections"
+        OnSelect="SelectConnection"
+        IsActive="ConnectionValue" />
+
+    @if (_isDraggingOutput)
+    {
+        <svg style="position:absolute; top:0; left:0; width:100%; height:80vh; pointer-events:none;">
+            <line x1="@_startPosition.X"
+                  y1="@_startPosition.Y"
+                  x2="@_cursorPosition.X"
+                  y2="@_cursorPosition.Y"
+                  stroke="black"
+                  stroke-width="2" />
+        </svg>
+    }
+
+    <ContextMenu
+        Show="showContextMenu"
+        CursorPosition="_cursorPosition"
+        Components="availableComponents"
+        OnAdd="AddComponent"
+        OnRun="RunSimulation"
+        OnHide="@(() => showContextMenu = false)" />
+
+    <SignalPopup
+        Show="showSignalPopup"
+        CursorPosition="_cursorPosition"
+        Values="selectedValues"
+        Times="selectedTimes"
+        OnClose="@(() => showSignalPopup = false)" />
+
+    <EditorPanel
+        Component="_selectedComponent"
+        GetEditorType="GetEditorType"
+        GetParameters="GetParameters"
+        OnClose="@(() => _selectedComponent = null)" />
+</div>

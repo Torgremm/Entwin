@@ -1,0 +1,33 @@
+@using Entwin.Client.Pages.Canvas
+
+@if (Component != null)
+{
+    <div style="
+        position: absolute;
+        top: @(Component.Y - 200 > 0 ? (int)Component.Y - 200 : (int)Component.Y + 230)px;
+        left: @((int)Component.X + 100)px;
+        z-index: 2000;
+        width: 300px;
+        max-height: 90vh;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 10px;
+        overflow-y: auto;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        pointer-events: auto;">
+        
+        <DynamicComponent Type="GetEditorType?.Invoke(Component)"
+        Parameters="GetParameters?.Invoke(Component)" />
+    </div>
+}
+
+@code {
+    [Parameter] public BaseComponentData? Component { get; set; }
+
+    [Parameter] public Func<BaseComponentData, Type>? GetEditorType { get; set; }
+
+    [Parameter] public Func<BaseComponentData, Dictionary<string, object>>? GetParameters { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+}

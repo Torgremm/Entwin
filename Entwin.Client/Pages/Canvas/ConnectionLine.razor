@@ -1,0 +1,40 @@
+@using Entwin.Shared.Components
+@using Entwin.Client.Pages.Canvas
+@using Entwin.Client.Components
+@using Microsoft.AspNetCore.Components.Web
+
+<svg style="position:absolute; top:0; left:0; width:100%; height:80vh; pointer-events:none;">
+    @foreach (var conn in Connections)
+    {
+        var fromCell = Cells.FirstOrDefault(c => c.Id == conn.From);
+        var toCell = Cells.FirstOrDefault(c => c.Id == conn.To);
+
+        if (fromCell is null || toCell is null)
+            continue;
+
+        int fromX = (int)(fromCell.X + 100) + 6;
+        int fromY = (int)(fromCell.Y + 8 + conn.From_Position * (100.0 / (fromCell.OutputCount + 1))) + 6;
+
+        int toX = (int)(toCell.X) - 6;
+        int toY = (int)(toCell.Y + 8 + conn.To_Position * (100.0 / (toCell.InputCount + 1))) + 6;
+
+        <DataConnection FromX="@fromX"
+                        FromY="@fromY"
+                        ToX="@toX"
+                        ToY="@toY"
+                        FromId="@conn.From"
+                        FromIndex="@conn.From_Position"
+                        ToId="@conn.To"
+                        ToIndex="@conn.To_Position"
+                        IsSelected="@conn.IsSelected"
+                        IsActive="@(IsActive?.Invoke(conn.From, conn.From_Position, conn.To, conn.To_Position) ?? false)"
+                        OnSelect="@(e => OnSelect.InvokeAsync((conn, e)))" />
+    }
+</svg>
+
+@code {
+    [Parameter] public List<BaseComponentData> Cells { get; set; } = [];
+    [Parameter] public List<CanvasView.Connection> Connections { get; set; } = [];
+    [Parameter] public EventCallback<(CanvasView.Connection, MouseEventArgs)> OnSelect { get; set; }
+    [Parameter] public Func<int, int, int, int, bool>? IsActive { get; set; }
+}

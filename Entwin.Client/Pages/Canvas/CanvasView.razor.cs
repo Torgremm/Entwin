@@ -1,160 +1,21 @@
-﻿@using Entwin.Client.Components.Editors
-@page "/canvas"
-@inject HttpClient Http
-@inject IJSRuntime JS
-@inject SimulationState SimState
+using Entwin.Client.Components;
+using Entwin.Client.Components.Editors;
+using Entwin.Shared.Components;
+using Entwin.Shared.Models;
+using Entwin.Client.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components.Web;
 
+namespace Entwin.Client.Pages.Canvas;
 
-<h3>
-    <ul style="font-size: 0.8em; color: gray;">
-        nothing
-    </ul>
-</h3>
-
-<div @ref="canvasRef"
-    @onmousemove="OnMouseMove"
-    @onmouseup="OnMouseUp"
-    @onmouseleave="OnMouseUp"
-    @onkeydown="HandleKeyDown"
-    @oncontextmenu:preventDefault="true"
-    @oncontextmenu="ShowContextMenu"
-    @onclick="OnCanvasClick"
-    tabindex="0"
-    style="position: relative; width: 100%; height: 80vh; border: 2px solid #444; background: #f0f0f0; user-select: none;">
-    @foreach (var cell in _cells)
-    {
-        <SimBase
-        ComponentData="cell"
-        OnSelect="@(e => SelectComponent(cell, e))"
-        OnStartDrag="OnStartDrag"
-        OnOutputDrag="OnOutputDrag"
-        OnInputDropped="OnInputDropped"
-        OnComponentSelected="ShowEditor"
-        />
-    }
-
-    @if (showContextMenu)
-    {
-        <div style="position:absolute; left:@(_cursorPosition.X)px; top:@(_cursorPosition.Y)px; background:#fff; border:1px solid #ccc; padding:5px; user-select:none;">
-            <div style="position: relative; display: inline-block;"
-                 @onmouseenter="() => showSubMenu = true"
-                 @onmouseleave="() => showSubMenu = false">
-                <span style="cursor:pointer;">
-                    Add ▸
-                </span>
-
-                @if (showSubMenu)
-                {
-                    <div style="position:absolute; left:100%; top:0; background:#eee; border:1px solid #aaa; padding:5px; z-index:1000; white-space: nowrap;">
-                        @foreach (var comp in availableComponents)
-                        {
-                            <div style="padding:2px 10px; cursor:pointer;"
-                                 @onclick="() => AddComponent(comp.ComponentType)">
-                                @comp.Name
-                            </div>
-                        }
-                    </div>
-                }
-                <div style="padding:2px 10px; cursor:pointer;"
-                    @onclick="() => RunSimulation()">
-                    Run
-                </div>
-            </div>
-        </div>
-    }
-
-
-
-
-    <svg style="position:absolute; top:0; left:0; width:100%; height:80vh; pointer-events:none;">
-         @foreach (var conn in _connections)
-        {
-            var fromCell = _cells.First(c => c.Id == conn.FromCellId);
-            var toCell = _cells.First(c => c.Id == conn.ToCellId);
-
-            int fromX = (int)(fromCell.X + 100) + 6;
-            int fromY = (int)(fromCell.Y + 8 + conn.FromOutputIndex * (100.0 / (fromCell.OutputCount + 1))) + 6;
-
-            int toX = (int)(toCell.X) - 6;
-            int toY = (int)(toCell.Y + 8 + conn.ToInputIndex * (100.0 / (toCell.InputCount + 1))) + 6;
-
-            <DataConnection FromX="@fromX"
-                FromY="@fromY"
-                ToX="@toX"
-                ToY="@toY"
-                FromId="@conn.FromCellId"
-                FromIndex="@conn.FromOutputIndex"
-                ToId="@conn.ToCellId"
-                ToIndex="@conn.ToInputIndex"
-                IsSelected="@conn.IsSelected"
-                IsActive="@ConnectionValue(conn.FromCellId,conn.FromOutputIndex,conn.ToCellId,conn.ToInputIndex)"
-                OnSelect="@(e => SelectConnection(conn, e))" />
-        }
-    </svg>
-
-    @if (_isDraggingOutput)
-    {
-        <svg style="position:absolute; top:0; left:0; width:100%; height:80vh; pointer-events:none;">
-            <line x1="@_startPosition.X"
-                  y1="@_startPosition.Y"
-                  x2="@_cursorPosition.X"
-                  y2="@_cursorPosition.Y"
-                  stroke="black"
-                  stroke-width="2" />
-        </svg>
-    }
-    @if (showSignalPopup && selectedValues?.Any() == true)
-    {
-        <div style="
-            position: absolute;
-            left: @(_cursorPosition.X)px;
-            top: @(_cursorPosition.Y)px;
-            width: 400px;
-            height: 300px;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            z-index: 5000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            overflow: hidden;
-            user-select: none;
-            pointer-events: auto;">
-            <PlotComponent 
-                YValues="selectedValues" 
-                XValues="selectedTimes" 
-                Label="Signal" />
-            <button @onclick="() => showSignalPopup = false" style="margin-top: 5px;">Close</button>
-        </div>
-    }
-
-</div>
-@if (_selectedComponent != null)
+public partial class CanvasView
 {
-    <div style="
-        position: absolute;
-        top: @(_selectedComponent.Y - 200 > 0 ? (int)_selectedComponent.Y - 200 : (int)_selectedComponent.Y + 230)px;
-        left: @((int)_selectedComponent.X + 100)px;
-        z-index: 2000;
-        width: 300px;
-        max-height: 90vh;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 10px;
-        overflow-y: auto;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        pointer-events: auto;">
-        
-        <DynamicComponent Type="@GetEditorType(_selectedComponent)" Parameters="GetParameters(_selectedComponent)" />
-    </div>
-}
+    [Inject] private SimulationState SimulationState { get; set; } = default!;
 
-
-
-@code {
     private ElementReference canvasRef;
     private DomRect canvasRectCache = new();
-    private SimulationResultDTO? _simulationResult;
 
     private readonly List<(string Name, Type ComponentType)> availableComponents = new()
     {
@@ -166,19 +27,19 @@
         ("TransferFunction", typeof(TransferFunction))
     };
 
-    private List<BaseComponentData> _cells = new();
+    private readonly List<BaseComponentData> _cells = new();
 
-    private class Connection
+    public class Connection
     {
-        public int FromCellId { get; set; }
-        public int ToCellId { get; set; }
-        public int FromOutputIndex { get; set; }
-        public int ToInputIndex { get; set; }
+        public int From { get; set; }
+        public int To { get; set; }
+        public int From_Position { get; set; }
+        public int To_Position { get; set; }
         public bool IsSelected { get; set; }
     }
-    private List<Connection> _connections = new();
+    private readonly List<Connection> _connections = new();
 
-    
+
 
     private int? draggingCellId = null;
     private double offsetX, offsetY;
@@ -211,10 +72,10 @@
 
                 Connections = _connections.Select(conn => new ConnectionDTO
                 {
-                    From = conn.FromCellId,
-                    From_Position = conn.FromOutputIndex,
-                    To = conn.ToCellId,
-                    To_Position = conn.ToInputIndex
+                    From = conn.From,
+                    From_Position = conn.From_Position,
+                    To = conn.To,
+                    To_Position = conn.To_Position
                 }).ToList()
             };
 
@@ -235,9 +96,9 @@
             }
 
             Console.WriteLine("Simulation succeeded.");
-            SimState.LastResult = result;
+            SimulationState.LastResult = result;
 
-            StateHasChanged();        
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -278,7 +139,7 @@
 
     private void OnMouseMove(MouseEventArgs e)
     {
-        if(_isDraggingOutput)
+        if (_isDraggingOutput)
             GetCursorPosition(e);
 
         if (draggingCellId.HasValue && canvasRectCache != null)
@@ -306,12 +167,12 @@
     }
 
     private (int Id, int Index) _dragSource;
-    private bool  _isDraggingOutput;
+    private bool _isDraggingOutput;
     private (int X, int Y) _cursorPosition;
     private (int X, int Y) _startPosition;
 
     private BaseComponentData? _selectedComponent;
-    
+
     private async Task OnOutputDrag((int Id, int Index, MouseEventArgs e) args)
     {
         var (cellId, outputIndex, e) = args;
@@ -333,25 +194,26 @@
     }
 
     private void OnInputDropped((int Id, int Index, MouseEventArgs e) args)
-    {   
-        if(!_isDraggingOutput)
+    {
+        if (!_isDraggingOutput)
             return;
-            
+
         var (toCellId, toInputIndex, e) = args;
 
-        if(_dragSource.Id == toCellId)
+        if (_dragSource.Id == toCellId)
             return;
 
-        if(_connections.Any(c => c.ToCellId == toCellId && c.ToInputIndex == toInputIndex))
+        if (_connections.Any(c => c.To == toCellId && c.To_Position == toInputIndex))
             return;
 
         if (_isDraggingOutput)
         {
-            var connection = new Connection() {
-                FromCellId = _dragSource.Id,
-                FromOutputIndex = _dragSource.Index,
-                ToCellId = toCellId,
-                ToInputIndex = toInputIndex,
+            var connection = new Connection()
+            {
+                From = _dragSource.Id,
+                From_Position = _dragSource.Index,
+                To = toCellId,
+                To_Position = toInputIndex,
                 IsSelected = false
             };
 
@@ -365,7 +227,7 @@
     private Dictionary<string, object> GetParameters(BaseComponentData component)
     {
         if (component == null)
-        return new Dictionary<string, object>();
+            return new Dictionary<string, object>();
 
         return new Dictionary<string, object>
         {
@@ -395,8 +257,10 @@
 
 
 
-    private void SelectConnection(Connection conn, MouseEventArgs e)
+    private Task SelectConnection((CanvasView.Connection conn, MouseEventArgs e) args)
     {
+        var (conn, e) = args;
+
         bool shiftHeld = e.ShiftKey;
 
         if (!shiftHeld)
@@ -412,15 +276,20 @@
         if (conn.IsSelected)
         {
             var key = new SignalKey(
-                conn.FromCellId,
-                conn.FromOutputIndex,
-                conn.ToCellId,
-                conn.ToInputIndex
+                conn.From,
+                conn.From_Position,
+                conn.To,
+                conn.To_Position
             );
 
             ShowSignal(key);
         }
+
+        StateHasChanged();
+
+        return Task.CompletedTask;
     }
+
 
     private void SelectComponent(BaseComponentData cell, MouseEventArgs e)
     {
@@ -435,10 +304,10 @@
         }
         cell.IsSelected = !cell.IsSelected;
 
-        if(cell.IsSelected)
+        if (cell.IsSelected)
             _selectedComponent = cell;
 
-        
+
     }
 
     private void OnCanvasClick(MouseEventArgs e)
@@ -463,7 +332,6 @@
 
 
     private bool showContextMenu = false;
-    private bool showSubMenu = false;
     private void ShowContextMenu(MouseEventArgs e)
     {
         GetCursorPosition(e);
@@ -483,7 +351,6 @@
         }
 
         showContextMenu = false;
-        showSubMenu = false;
         StateHasChanged();
     }
 
@@ -495,14 +362,15 @@
             _connections.RemoveAll(c => c.IsSelected);
 
             var selectedCellIds = _cells.Where(c => c.IsSelected).Select(c => c.Id).ToHashSet();
-            _connections.RemoveAll(c => selectedCellIds.Contains(c.FromCellId) || selectedCellIds.Contains(c.ToCellId));
+            _connections.RemoveAll(c => selectedCellIds.Contains(c.From) || selectedCellIds.Contains(c.To));
             _cells.RemoveAll(c => c.IsSelected);
 
             StateHasChanged();
         }
     }
 
-    private void GetCursorPosition(MouseEventArgs e){
+    private void GetCursorPosition(MouseEventArgs e)
+    {
         var relativeX = e.ClientX - canvasRectCache.Left;
         var relativeY = e.ClientY - canvasRectCache.Top;
 
@@ -510,24 +378,25 @@
         _cursorPosition.Y = (int)relativeY;
     }
 
-    private bool ConnectionValue(int from, int from_p, int to, int to_p){
+    private bool ConnectionValue(int from, int from_p, int to, int to_p)
+    {
         var key = new SignalKey(
             from,
             from_p,
             to,
             to_p
         );
-        return SimState.LastResult?.Signals.ContainsKey(key) == true;
+        return SimulationState.LastResult?.Signals.ContainsKey(key) == true;
     }
 
     private bool showSignalPopup;
-    private List<double> selectedValues;
-    private List<double> selectedTimes;
-    private SignalKey selectedSignalKey;
+    private List<double>? selectedValues;
+    private List<double>? selectedTimes;
+    private SignalKey? selectedSignalKey;
 
     private void ShowSignal(SignalKey key)
     {
-        if (SimState.LastResult?.Signals.TryGetValue(key, out var signalValues) ?? false)
+        if (SimulationState.LastResult?.Signals.TryGetValue(key, out var signalValues) ?? false)
         {
             selectedTimes = Enumerable.Range(0, signalValues.Count).Select(i => i * 0.1).ToList(); //FIX TIMESTEP
             selectedValues = new List<double>(signalValues);
@@ -537,6 +406,4 @@
             showSignalPopup = true;
         }
     }
-
-
 }
