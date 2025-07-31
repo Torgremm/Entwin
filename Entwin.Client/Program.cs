@@ -17,10 +17,6 @@ if (string.IsNullOrWhiteSpace(apiBaseUrl))
 {
     throw new Exception("API base URL not configured in appsettings.json");
 }
-builder.Services
-    .AddBlazorise(options => { options.Immediate = true; })
-    .AddBootstrap5Providers()
-    .AddFontAwesomeIcons();
 
 builder.Services.AddScoped<SimulationState>();
 

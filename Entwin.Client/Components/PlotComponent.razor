@@ -1,71 +1,16 @@
-@using Blazorise.Charts
-@using System.Globalization
-
-<LineChart @ref="chart" TItem="double" Style="height: 300px;" />
+<div id="plotly-chart" style="width: 100%; height: 300px;"></div>
 
 @code {
-    private LineChart<double>? chart;
-
     [Parameter] public List<double> YValues { get; set; } = new();
     [Parameter] public List<double>? XValues { get; set; }
     [Parameter] public string Label { get; set; } = "Signal";
 
-    private List<double> previousYValues = new();
-    private List<double>? previousXValues = null;
-
-    private bool _firstRenderDone = false;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (!_firstRenderDone || chart == null)
-            return;
-
-        await UpdateChartIfChanged();
-    }
+    [Inject] IJSRuntime JS { get; set; } = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            _firstRenderDone = true;
-            if (chart != null)
-            {
-                await UpdateChartIfChanged();
-            }
-        }
-    }
+        var x = XValues ?? Enumerable.Range(0, YValues.Count).Select(i => (double)i).ToList();
 
-    private async Task UpdateChartIfChanged()
-    {
-        bool yChanged = !YValues.SequenceEqual(previousYValues);
-        bool xChanged = (XValues == null && previousXValues != null) ||
-                        (XValues != null && previousXValues == null) ||
-                        (XValues != null && previousXValues != null && !XValues.SequenceEqual(previousXValues));
-
-        if (yChanged || xChanged)
-        {
-            previousYValues = new(YValues);
-            previousXValues = XValues == null ? null : new(XValues);
-
-            var xLabels = XValues?.Select(x => x.ToString("F2", CultureInfo.InvariantCulture)).ToList()
-                        ?? Enumerable.Range(0, YValues.Count).Select(i => i.ToString()).ToList();
-
-            Console.WriteLine($"[PlotComponent] Updating chart with {YValues.Count} points: {string.Join(", ", YValues)}");
-            Console.WriteLine($"[PlotComponent] Updating chart with {XValues.Count} points: {string.Join(", ", XValues)}");
-
-            await chart.Clear();
-            await chart.AddLabelsDatasetsAndUpdate(
-                xLabels,
-                new LineChartDataset<double>
-                {
-                    Label = Label,
-                    Data = YValues,
-                    BackgroundColor = "rgba(75, 192, 192, 0.2)",
-                    BorderColor = "rgba(75, 192, 192, 1)",
-                    Fill = false,
-                    PointRadius = 1,
-                    Tension = 0.3f
-                }, options);
-        }
+        await JS.InvokeVoidAsync("renderPlot", x, YValues, Label);
     }
 }

@@ -7,12 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazorise" Version="1.8.0" />
     <PackageReference Include="Blazorise.Bootstrap5" Version="1.8.0" />
-    <PackageReference Include="Blazorise.Charts" Version="1.8.0" />
     <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.18" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.18" PrivateAssets="all" />
+    <PackageReference Include="Plotly.NET" Version="5.1.0" />
   </ItemGroup>
 
   <ItemGroup>
