@@ -1,6 +1,6 @@
 namespace Entwin.Shared.Components
 {
-    public class SumDTO
+    public class SumDTO : ISimulatableDTO
     {
         public int Id { get; set; }
 

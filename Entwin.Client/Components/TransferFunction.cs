@@ -1,4 +1,5 @@
 using Entwin.Shared.Components;
+
 namespace Entwin.Client.Components
 {
     public class TransferFunction : BaseComponentData
@@ -12,9 +13,9 @@ namespace Entwin.Client.Components
             OutputCount = 1;
         }
 
-        public TransferFunctionComponentDTO ToDTO()
+        public TransferFunctionDTO ToDTO()
         {
-            return new TransferFunctionComponentDTO
+            return new TransferFunctionDTO
             {
                 Id = this.Id,
                 sNumerator = Numerator.Select(n => (double)n).ToList(),

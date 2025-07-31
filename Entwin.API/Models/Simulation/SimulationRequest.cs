@@ -1,4 +1,5 @@
 using Entwin.API.Components;
+using Entwin.Shared.Models;
 namespace Entwin.API.Models;
 
 public enum Solver
@@ -15,6 +16,13 @@ public class SimulationSettings
     public Solver OdeSolver { get; set; } = Solver.EuF1;
     public double Time { get; set; } = 0.0;
 
+    public SimulationSettings(SimulationSettingsDTO dto)
+    {
+        Duration = dto.Duration;
+        TimeStep = dto.TimeStep;
+        OdeSolver = (Solver)dto.OdeSolver;
+        Time = 0.0;
+    }
     public double StepTime()
     {
         return Time + TimeStep;
@@ -24,7 +32,7 @@ public class SimulationSettings
 
 public class SimulationRequest
 {
-    public SimulationSettings settings { get; set; } = new();
+    public SimulationSettings settings { get; set; } = new(new SimulationSettingsDTO());
     public List<ISimulatable> Components { get; set; } = new();
     public List<Connection> Connections { get; set; } = new();
     public Dictionary<Connection, double> PreviousSignals { get; set; } = new();

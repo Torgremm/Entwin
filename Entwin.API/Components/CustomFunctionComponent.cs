@@ -21,10 +21,10 @@ namespace Entwin.API.Components
             ValidateExpression(_expressionString);
         }
         public CustomFunctionComponent(CustomFunctionDTO func)
-    {
-        Id = func.Id;
-        _expressionString = func.UserInput;
-    }
+        {
+            Id = func.Id;
+            _expressionString = func.UserInput;
+        }
 
         public double[] SimulateStep(double[] input, double currentTime)
         {

@@ -1,3 +1,5 @@
+using Entwin.Shared.Components;
+
 namespace Entwin.API.Components;
 
 public record Connection : IEquatable<Connection>
@@ -14,6 +16,14 @@ public record Connection : IEquatable<Connection>
         From_Position = from_Position;
         To_Position = to_Position;
     }
-    public Connection(int f, int t) : this(f,t,0,0){ }
-    
+
+    public Connection(ConnectionDTO c)
+    {
+        From = c.From;
+        To = c.To;
+        From_Position = c.From_Position;
+        To_Position = c.To_Position;
+    }
+    public Connection(int f, int t) : this(f, t, 0, 0) { }
+
 }

@@ -1,5 +1,6 @@
 using Entwin.API.Models;
 using Entwin.API.Services;
+using Entwin.Shared.Models;
 using Entwin.Shared.Components;
 
 namespace Entwin.API.Components;
@@ -16,7 +17,7 @@ public class TransferFunctionComponent : ISimulatable
     private List<double> _outputHistory = new();
     private double _currentTime = 0.0;
 
-    public TransferFunctionComponent(TransferFunctionComponentDTO dto, SimulationSettings settings)
+    public TransferFunctionComponent(TransferFunctionDTO dto, SimulationSettingsDTO settings)
     {
         Id = dto.Id;
         sNumerator = dto.sNumerator;

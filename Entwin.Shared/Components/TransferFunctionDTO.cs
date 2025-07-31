@@ -1,6 +1,6 @@
 namespace Entwin.Shared.Components;
 
-public class TransferFunctionComponentDTO
+public class TransferFunctionDTO : ISimulatableDTO
 {
     public int Id { get; set; }
     public List<double> sNumerator { get; set; } = new();
