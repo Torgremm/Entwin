@@ -13,6 +13,7 @@ namespace Entwin.Client.Pages.Canvas;
 public partial class CanvasView
 {
     [Inject] private SimulationState SimulationState { get; set; } = default!;
+    [Inject] private CanvasStateService CanvasState { get; set; } = default!;
 
     private ElementReference canvasRef;
     private DomRect canvasRectCache = new();
@@ -73,8 +74,8 @@ public partial class CanvasView
                     if (cell is ISimulatableComponent dtoComponent)
                     {
                         if (!_connections.Any(conn => conn.From == cell.Id))
-                            _connections.Add(new Connection{From = cell.Id});
-                        
+                            _connections.Add(new Connection { From = cell.Id });
+
                         return dtoComponent.ToDTO();
                     }
                     else
@@ -110,13 +111,13 @@ public partial class CanvasView
             SimulationState.LastResult = result;
 
             StateHasChanged();
+            CanvasState.UpdateCanvasState(_cells, _connections);
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Simulation exception: {ex.Message}");
         }
-    }
-
+    }    
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -124,6 +125,7 @@ public partial class CanvasView
         if (firstRender)
         {
             canvasRectCache = await JS.InvokeAsync<DomRect>("getBoundingClientRect", canvasRef);
+            CanvasState.UpdateCanvasState(_cells, _connections);
             StateHasChanged();
         }
     }
@@ -167,6 +169,7 @@ public partial class CanvasView
                 cell.X = Math.Round(clampedX);
                 cell.Y = Math.Round(clampedY);
                 StateHasChanged();
+                CanvasState.UpdateCanvasState(_cells, _connections);
             }
         }
     }
@@ -317,8 +320,6 @@ public partial class CanvasView
 
         if (cell.IsSelected)
             _selectedComponent = cell;
-
-
     }
 
     private void OnCanvasClick(MouseEventArgs e)
@@ -363,6 +364,7 @@ public partial class CanvasView
 
         showContextMenu = false;
         StateHasChanged();
+        CanvasState.UpdateCanvasState(_cells, _connections);
     }
 
 
@@ -377,6 +379,8 @@ public partial class CanvasView
             _cells.RemoveAll(c => c.IsSelected);
 
             StateHasChanged();
+            CanvasState.UpdateCanvasState(_cells, _connections);
+
         }
     }
 

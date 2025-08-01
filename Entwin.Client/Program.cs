@@ -19,6 +19,7 @@ if (string.IsNullOrWhiteSpace(apiBaseUrl))
 }
 
 builder.Services.AddScoped<SimulationState>();
+builder.Services.AddScoped<CanvasStateService>();
 
 builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
