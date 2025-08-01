@@ -4,10 +4,12 @@ using Entwin.API.Components;
 using Entwin.API.Services;
 using Entwin.Shared.Models;
 using Entwin.Shared.Components;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Entwin.API.Controllers;
 
 [ApiController]
+[AllowAnonymous]
 [Route("api/[controller]")]
 public class SimulationController : ControllerBase
 {

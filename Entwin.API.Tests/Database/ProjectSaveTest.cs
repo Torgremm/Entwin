@@ -17,9 +17,9 @@ public class ProjectSaveLogicTest
 
         using (var context = new AppDbContext(options))
         {
-            var project = new Project
+            var project = new ProjectModel
             {
-                UserId = 123,
+                UserId = "123-123-123-b123-a123",
                 ProjectData = true,
                 SavedTime = DateTime.UtcNow
             };
@@ -30,7 +30,7 @@ public class ProjectSaveLogicTest
 
         using (var context = new AppDbContext(options))
         {
-            var savedProject = await context.Projects.FirstOrDefaultAsync(p => p.UserId == 123);
+            var savedProject = await context.Projects.FirstOrDefaultAsync(p => p.UserId == "123-123-123-b123-a123");
             Assert.NotNull(savedProject);
             Assert.True(savedProject.ProjectData);
         }
