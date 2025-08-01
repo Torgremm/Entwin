@@ -1,0 +1,33 @@
+@using Microsoft.AspNetCore.Components
+@inject Entwin.Client.Services.SimulationState SimulationState
+
+<div class="header">
+
+    <div class="d-flex gap-3 align-items-end flex-wrap">
+        <div class="form-group" style="max-width: 200px;">
+            <label>Duration</label>
+            <input type="number"
+                   class="form-control"
+                   @bind="SimulationState.Duration"
+                   @bind:event="oninput" />
+        </div>
+
+        <div class="form-group" style="max-width: 200px;">
+            <p>Time Step: @SimulationState.TimeStep</p>
+            <input type="range"
+                   min="1" max="5"
+                   step="0.01"
+                   @bind="LogSliderValue"
+                   @bind:event="oninput" />
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private double LogSliderValue
+    {
+        get => Math.Log10(SimulationState.TimeStep) + 4;
+        set => SimulationState.TimeStep = Math.Pow(10, value - 4);
+    }
+}

@@ -62,6 +62,12 @@ public partial class CanvasView
         {
             var request = new SimulationRequestDTO
             {
+                Settings = new SimulationSettingsDTO
+                {
+                    Duration = SimulationState.Duration,
+                    TimeStep = SimulationState.TimeStep
+                },
+
                 Components = _cells.Select(cell =>
                 {
                     if (cell is ISimulatableComponent dtoComponent)
