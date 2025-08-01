@@ -22,7 +22,7 @@ public partial class CanvasView
         ("Constant", typeof(Constant)),
         ("Gain", typeof(Gain)),
         ("CustomFunction", typeof(CustomFunction)),
-        ("Step", typeof(Components.Step)),
+        ("Step", typeof(Step)),
         ("Sum", typeof(Sum)),
         ("TransferFunction", typeof(TransferFunction))
     };
@@ -65,7 +65,12 @@ public partial class CanvasView
                 Components = _cells.Select(cell =>
                 {
                     if (cell is ISimulatableComponent dtoComponent)
+                    {
+                        if (!_connections.Any(conn => conn.From == cell.Id))
+                            _connections.Add(new Connection{From = cell.Id});
+                        
                         return dtoComponent.ToDTO();
+                    }
                     else
                         throw new InvalidOperationException("Component does not support DTO conversion.");
                 }).ToList(),
@@ -243,7 +248,7 @@ public partial class CanvasView
             TransferFunction => typeof(TransferFunctionEditor),
             Gain => typeof(GainEditor),
             Constant => typeof(ConstantEditor),
-            Components.Step => typeof(StepEditor),
+            Step => typeof(StepEditor),
             Sum => typeof(SumEditor),
             CustomFunction => typeof(CustomFunctionEditor),
             _ => throw new ArgumentException($"No editor type defined for component of type {component.GetType().Name}")
@@ -257,7 +262,7 @@ public partial class CanvasView
 
 
 
-    private Task SelectConnection((CanvasView.Connection conn, MouseEventArgs e) args)
+    private Task SelectConnection((Connection conn, MouseEventArgs e) args)
     {
         var (conn, e) = args;
 
@@ -392,17 +397,15 @@ public partial class CanvasView
     private bool showSignalPopup;
     private List<double>? selectedValues;
     private List<double>? selectedTimes;
-    private SignalKey? selectedSignalKey;
 
     private void ShowSignal(SignalKey key)
     {
         if (SimulationState.LastResult?.Signals.TryGetValue(key, out var signalValues) ?? false)
         {
-            selectedTimes = Enumerable.Range(0, signalValues.Count).Select(i => i * 0.1).ToList(); //FIX TIMESTEP
+            selectedTimes = SimulationState.LastResult?.Time;
             selectedValues = new List<double>(signalValues);
 
             Console.WriteLine($"ShowSignal called with {selectedValues.Count} values.");
-            selectedSignalKey = key;
             showSignalPopup = true;
         }
     }

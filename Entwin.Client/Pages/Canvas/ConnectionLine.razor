@@ -9,14 +9,19 @@
         var fromCell = Cells.FirstOrDefault(c => c.Id == conn.From);
         var toCell = Cells.FirstOrDefault(c => c.Id == conn.To);
 
-        if (fromCell is null || toCell is null)
+        if (fromCell is null)
             continue;
 
         int fromX = (int)(fromCell.X + 100) + 6;
         int fromY = (int)(fromCell.Y + 8 + conn.From_Position * (100.0 / (fromCell.OutputCount + 1))) + 6;
 
-        int toX = (int)(toCell.X) - 6;
-        int toY = (int)(toCell.Y + 8 + conn.To_Position * (100.0 / (toCell.InputCount + 1))) + 6;
+        int toX = (int)(fromX + 100);
+        int toY = fromY;
+
+        if(toCell is not null){
+            toX = (int)(toCell.X) - 6;
+            toY = (int)(toCell.Y + 8 + conn.To_Position * (100.0 / (toCell.InputCount + 1))) + 6;
+        }
 
         <DataConnection FromX="@fromX"
                         FromY="@fromY"
