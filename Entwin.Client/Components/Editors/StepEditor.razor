@@ -23,9 +23,11 @@
     <div class="form-group">
         <label>Switch Time (s):</label>
         <input type="number"
-               class="form-control"
-               @bind="Component.SwitchTime"
-               @bind:event="oninput" />
+                class="form-control"
+                @bind="Component.SwitchTime"
+                @bind:event="oninput" 
+                @onclick:stopPropagation
+               />
     </div>
 
     <div class="form-actions">

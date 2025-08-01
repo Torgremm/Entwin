@@ -9,7 +9,9 @@
         <input type="number"
                class="form-control"
                @bind="Component.Value"
-               @bind:event="oninput" />
+               @bind:event="oninput"
+               @onclick:stopPropagation
+               />
     </div>
 
     <div class="form-actions">

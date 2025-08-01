@@ -7,9 +7,11 @@
     <div class="form-group">
         <label>Signs:</label>
         <input type="text"
-               class="form-control"
-               @bind="Component.Signs"
-               @bind:event="oninput" />
+                class="form-control"
+                @bind="Component.Signs"
+                @bind:event="oninput" 
+                @onclick:stopPropagation
+               />
         <small class="form-text text-muted">
             Use '+' or '-' per input (e.g., <code>++</code> for A + B, <code>+-</code> for A - B)
         </small>
