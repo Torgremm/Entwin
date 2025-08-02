@@ -2,8 +2,9 @@
 
 <div style="@BoxStyle"
      @onmousedown="OnMouseDown"
-     @onclick="OnClick"
      @onclick:stopPropagation="true"
+     @onmousemove="OnMouseMove"
+     @onmouseup="OnMouseUp"
      >
     @ComponentData.DisplayName
 
@@ -64,6 +65,9 @@
        cursor:grab;
        {(ComponentData.IsSelected ? "box-shadow: 0 0 6px 2px #3399ff;" : "")}";
 
+    private bool _isDragging = false;
+    private double _startX, _startY;
+
     [Parameter] public EventCallback<MouseEventArgs> OnSelect { get; set; }
     [Parameter] public EventCallback<(int Id, MouseEventArgs e)> OnStartDrag { get; set; }
     [Parameter] public EventCallback<(int Id, int OutputIndex, MouseEventArgs e)> OnOutputDrag { get; set; }
@@ -73,7 +77,28 @@
 
     private async Task OnMouseDown(MouseEventArgs e)
     {
+        _startX = e.ClientX;
+        _startY = e.ClientY;
+        _isDragging = false;
+
         await OnStartDrag.InvokeAsync((ComponentData.Id, e));
+    }
+
+    private void OnMouseMove(MouseEventArgs e)
+    {
+        var dx = Math.Abs(e.ClientX - _startX);
+        var dy = Math.Abs(e.ClientY - _startY);
+
+        if (dx > 10 || dy > 10)
+            _isDragging = true;
+    }
+
+    private async Task OnMouseUp(MouseEventArgs e)
+    {
+        if (!_isDragging)
+            await OnClick(e);
+
+        _isDragging = false;
     }
 
     private async Task OnClick(MouseEventArgs e)
