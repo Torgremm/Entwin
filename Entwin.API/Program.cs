@@ -9,8 +9,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "super_secret_key_123!";
-var keyBytes = Encoding.ASCII.GetBytes(jwtKey);
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "YourVeryStrongSecretKeyThatIsAtLeast32Chars!ThisIsASecretKeyThatIsDefinitelyLongEnough123!";
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -72,3 +72,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+

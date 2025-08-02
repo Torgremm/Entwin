@@ -2,6 +2,9 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Entwin.Shared.Models
 @using System.Net.Http.Json
+
+@inject LoginModalService LoginModalService
+@inject AuthService AuthService
 @inject Entwin.Client.Services.SimulationState SimulationState
 @inject Entwin.Client.Services.CanvasStateService CanvasState
 @inject HttpClient Http
@@ -48,14 +51,25 @@
     {
         try
         {
-            await CanvasState.SaveProjectAsync(Http, userId: 123); // Replace with actual user ID
+            await CanvasState.SaveProjectAsync(Http);
             status = "Project saved!";
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"HttpRequestException caught: {ex.Message}");
+            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await LoginModalService.ShowLoginAsync(Save);
+            }
+            else
+            {
+                status = $"Error: {ex.Message}";
+            }
         }
         catch (Exception ex)
         {
             status = $"Error: {ex.Message}";
         }
     }
-
     
 }

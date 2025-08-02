@@ -23,8 +23,9 @@ namespace Entwin.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("ProjectData")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("CanvasDataJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("SavedTime")
                         .HasColumnType("TEXT");

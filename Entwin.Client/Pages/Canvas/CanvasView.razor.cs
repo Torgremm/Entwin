@@ -413,9 +413,8 @@ public partial class CanvasView
         if (SimulationState.LastResult?.Signals.TryGetValue(key, out var signalValues) ?? false)
         {
             selectedTimes = SimulationState.LastResult?.Time;
-            selectedValues = new List<double>(signalValues);
+            selectedValues = signalValues;
 
-            Console.WriteLine($"ShowSignal called with {selectedValues.Count} values.");
             showSignalPopup = true;
         }
     }

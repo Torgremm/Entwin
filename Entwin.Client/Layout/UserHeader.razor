@@ -1,0 +1,34 @@
+@inject AuthService AuthService
+@inject LoginModalService LoginModalService
+
+<div class="user-header">
+    @if (IsLoggedIn)
+    {
+        <span>Welcome!</span>
+        <button class="btn btn-link" @onclick="Logout">Logout</button>
+    }
+    else
+    {
+        <button class="btn btn-link" @onclick="ShowLogin">Login</button>
+    }
+</div>
+
+@code {
+    private bool IsLoggedIn => !string.IsNullOrEmpty(AuthService.Token);
+
+    private async Task ShowLogin()
+    {
+        await LoginModalService.ShowLoginAsync(OnLoginSuccess);
+    }
+
+    private async Task OnLoginSuccess()
+    {
+        StateHasChanged();
+    }
+
+    private void Logout()
+    {
+        AuthService.Logout();
+        StateHasChanged();
+    }
+}

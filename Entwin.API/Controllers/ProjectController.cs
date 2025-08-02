@@ -3,6 +3,8 @@ using Entwin.API.Models;
 using Entwin.API.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Entwin.Shared.Models;
+using System.Text.Json;
 
 namespace Entwin.API.Controllers;
 
@@ -19,7 +21,7 @@ public class ProjectController : ControllerBase
     }
 
     [HttpPost("save")]
-    public async Task<IActionResult> SaveProject([FromBody] ProjectModel project)
+    public async Task<IActionResult> SaveProject([FromBody] ProjectSaveDTO projectDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -29,12 +31,17 @@ public class ProjectController : ControllerBase
         if (userId == null)
             return Unauthorized("User ID not found.");
 
-        project.UserId = userId;
+        var projectModel = new ProjectModel
+            {
+                UserId = userId,
+                SavedTime = projectDto.SavedTime,
+                CanvasDataJson = JsonSerializer.Serialize(projectDto.CanvasData)
+            };
 
-        _context.Projects.Add(project);
+        _context.Projects.Add(projectModel);
         await _context.SaveChangesAsync();
 
-        return Ok(project);
+        return Ok(projectModel);
     }
 
     [HttpPost("load")]

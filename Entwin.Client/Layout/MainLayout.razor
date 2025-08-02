@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using Entwin.Client.Services
+@using Entwin.Client.Components.Authorization
+@inherits LayoutComponentBase
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -6,7 +8,7 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <UserHeader />
         </div>
 
         <article class="content px-4">
@@ -14,3 +16,38 @@
         </article>
     </main>
 </div>
+
+@if (showLoginModal)
+{
+    <LoginModal OnLoginSuccess="HandleLoginSuccess" />
+}
+
+@code {
+    [Inject] private LoginModalService LoginModalService { get; set; } = default!;
+
+    private bool showLoginModal = false;
+
+    protected override void OnInitialized()
+    {
+        LoginModalService.LoginRequested += () => InvokeAsync(ShowModal);
+    }
+
+
+    private async Task ShowModal()
+    {
+        showLoginModal = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleLoginSuccess()
+    {
+        showLoginModal = false;
+
+        if (LoginModalService.DeferredAction is not null)
+        {
+            var action = LoginModalService.DeferredAction;
+            LoginModalService.Clear();
+            await action.Invoke();
+        }
+    }
+}

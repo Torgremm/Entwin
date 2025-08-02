@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Entwin.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250801102715_InitialCreate")]
+    [Migration("20250802105517_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -26,8 +26,9 @@ namespace Entwin.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("ProjectData")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("CanvasDataJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("SavedTime")
                         .HasColumnType("TEXT");

@@ -56,7 +56,7 @@ public class IdentityController : ControllerBase
             new Claim(ClaimTypes.Email, user.Email ?? "")
         };
 
-        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? "super_secret_key_123!"));
+        var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? "YourVeryStrongSecretKeyThatIsAtLeast32Chars!ThisIsASecretKeyThatIsDefinitelyLongEnough123!"));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(
             claims: claims,

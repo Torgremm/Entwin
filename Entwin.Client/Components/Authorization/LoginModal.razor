@@ -1,0 +1,45 @@
+@inject AuthService AuthService
+
+<div class="modal show d-block" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Login or Register</h5></div>
+            <div class="modal-body">
+                <input class="form-control mb-2" placeholder="Email" @bind="email" />
+                <input class="form-control mb-2" type="password" placeholder="Password" @bind="password" />
+                <div class="text-danger">@error</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" @onclick="Login">Login</button>
+                <button class="btn btn-secondary" @onclick="Register">Register</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnLoginSuccess { get; set; }
+
+    private string email = "";
+    private string password = "";
+    private string error = "";
+
+    private async Task Login()
+    {
+        var success = await AuthService.Login(email, password);
+        if (success)
+            await OnLoginSuccess.InvokeAsync();
+        else
+            error = "Login failed. Try again.";
+    }
+
+    private async Task Register()
+    {
+        var registered = await AuthService.Register(email, password);
+        if (registered)
+            await Login();
+        else
+            error = "Registration failed.";
+    }
+}
+

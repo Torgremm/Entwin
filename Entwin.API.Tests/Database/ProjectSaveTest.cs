@@ -15,12 +15,14 @@ public class ProjectSaveLogicTest
             .UseInMemoryDatabase("ProjectSaveTestDb")
             .Options;
 
+        var canvasJson = "{\"Components\":[],\"Connections\":[]}";
+
         using (var context = new AppDbContext(options))
         {
             var project = new ProjectModel
             {
                 UserId = "123-123-123-b123-a123",
-                ProjectData = true,
+                CanvasDataJson = canvasJson,
                 SavedTime = DateTime.UtcNow
             };
 
@@ -32,7 +34,7 @@ public class ProjectSaveLogicTest
         {
             var savedProject = await context.Projects.FirstOrDefaultAsync(p => p.UserId == "123-123-123-b123-a123");
             Assert.NotNull(savedProject);
-            Assert.True(savedProject.ProjectData);
+            Assert.Equal(canvasJson, savedProject!.CanvasDataJson);
         }
     }
 }

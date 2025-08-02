@@ -16,11 +16,10 @@ public class CanvasStateService
         _connections = connections;
     }
 
-    public async Task SaveProjectAsync(HttpClient http, int userId)
+    public async Task SaveProjectAsync(HttpClient http)
     {
         var dto = new ProjectSaveDTO
         {
-            UserId = userId,
             SavedTime = DateTime.UtcNow,
             CanvasData = new CanvasDTO
             {
@@ -28,6 +27,7 @@ public class CanvasStateService
                     .OfType<ISimulatableComponent>()
                     .Select(c => c.ToDTO())
                     .ToList(),
+
                 Connections = _connections
                     .Select(c => new ConnectionDTO
                     {
@@ -43,7 +43,7 @@ public class CanvasStateService
         var response = await http.PostAsJsonAsync("api/project/save", dto);
         if (!response.IsSuccessStatusCode)
         {
-            throw new Exception($"Failed to save project: {response.StatusCode}");
+            throw new HttpRequestException($"Failed to save project: {response.StatusCode}", null, response.StatusCode);
         }
     }
 }

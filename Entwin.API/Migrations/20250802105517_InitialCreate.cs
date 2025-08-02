@@ -163,7 +163,7 @@ namespace Entwin.API.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    ProjectData = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CanvasDataJson = table.Column<string>(type: "TEXT", nullable: false),
                     SavedTime = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>

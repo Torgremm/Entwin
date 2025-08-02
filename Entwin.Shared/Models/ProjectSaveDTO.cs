@@ -4,7 +4,6 @@ namespace Entwin.Shared.Models;
 
 public class ProjectSaveDTO
 {
-    public int UserId { get; set; }
     public CanvasDTO CanvasData { get; set; }
     public DateTime SavedTime { get; set; }
 }
