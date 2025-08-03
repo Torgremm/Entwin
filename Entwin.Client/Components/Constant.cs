@@ -22,5 +22,19 @@ namespace Entwin.Client.Components
             };
         }
 
+        public Constant(ComponentSaveDTO dto) : base(dto)
+        {
+            if (dto.SimulationData is ConstantDTO data)
+            {
+                Id = data.Id;
+                Value = data.Value;
+                DisplayName = Value.ToString();
+            }
+            else
+            {
+                throw new ArgumentException("Invalid DTO for Constant");
+            }
+        }
+
     }
 }

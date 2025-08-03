@@ -19,5 +19,25 @@ namespace Entwin.API.Models
                 _ => throw new NotSupportedException($"Unsupported DTO type: {dto.GetType().Name}")
             };
         }
+
+        public static ProjectSaveDTO MapToDTO(ProjectModel model)
+        {
+            return new ProjectSaveDTO
+            {
+                Name = model.Name,
+                CanvasData = model.CanvasData,
+                SavedTime = model.SavedTime
+            };
+        }
+
+        public static ProjectModel MapToModel(ProjectSaveDTO dto)
+        {
+            return new ProjectModel
+            {
+                Name = dto.Name,
+                SavedTime = dto.SavedTime,
+                CanvasData = dto.CanvasData
+            };
+        }
     }
 }

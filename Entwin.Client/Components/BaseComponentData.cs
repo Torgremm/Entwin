@@ -20,6 +20,7 @@ namespace Entwin.Client.Components
                 SimulationData = this.ToDTO(),
                 VisualData = new UIData
                 {
+                    DisplayName = this.DisplayName,
                     X = this.X,
                     Y = this.Y,
                     InputCount = this.InputCount,
@@ -27,6 +28,17 @@ namespace Entwin.Client.Components
                 }
             };
         }
+
+        protected BaseComponentData(ComponentSaveDTO dto)
+        {
+            DisplayName = dto.VisualData.DisplayName;
+            X = dto.VisualData.X;
+            Y = dto.VisualData.Y;
+            InputCount = dto.VisualData.InputCount;
+            OutputCount = dto.VisualData.OutputCount;
+        }
+
+        protected BaseComponentData() { }
 
         public abstract SimulatableDTOBase ToDTO();
     }

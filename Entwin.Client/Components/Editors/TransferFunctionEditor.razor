@@ -57,10 +57,10 @@
         OnClose.InvokeAsync();
     }
 
-    private static int[] ParseIntArray(string text)
+    private static double[] ParseIntArray(string text)
     {
         return text.Split(",", StringSplitOptions.RemoveEmptyEntries)
-                   .Select(s => int.TryParse(s.Trim(), out var n) ? n : 0)
+                   .Select(s => double.TryParse(s.Trim(), out var n) ? n : 0)
                    .ToArray();
     }
 }

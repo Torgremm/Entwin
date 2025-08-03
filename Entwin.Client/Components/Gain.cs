@@ -1,4 +1,6 @@
 using Entwin.Shared.Components;
+using Entwin.Shared.Models;
+
 namespace Entwin.Client.Components
 {
     public class Gain : BaseComponentData
@@ -18,6 +20,19 @@ namespace Entwin.Client.Components
                 Id = this.Id,
                 Value = this.Value
             };
+        }
+
+        public Gain(ComponentSaveDTO dto) : base(dto)
+        {
+            if (dto.SimulationData is GainDTO data)
+            {
+                Id = data.Id;
+                Value = data.Value;
+            }
+            else
+            {
+                throw new ArgumentException("Invalid DTO for Constant");
+            }
         }
     }
 }

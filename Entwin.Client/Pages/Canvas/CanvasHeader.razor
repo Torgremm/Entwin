@@ -1,7 +1,6 @@
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Forms
 @using Entwin.Shared.Models
-@using System.Net.Http.Json
 
 @inject LoginModalService LoginModalService
 @inject AuthService AuthService
@@ -29,7 +28,30 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <button type="submit" class="btn btn-primary" @onclick="Save">Save</button>
+            <button type="button" class="btn btn-primary" @onclick="LoadProjects">Load</button>
+        </div>
+
+        @if (showDropdown)
+        {
+            <div class="form-group" style="max-width: 300px;">
+                <label>Select Project to Load</label>
+                <select class="form-select" @onchange="OnProjectSelected">
+                    <option value="">-- Select Project --</option>
+                    @foreach (var project in CanvasState.AvailableProjects)
+                    {
+                        <option value="@project.Name">@project.Name</option>
+                    }
+                </select>
+            </div>
+        }
+
+        <div class="form-group" style="max-width: 300px;">
+            <label>Project Name</label>
+            <input type="text" class="form-control" @bind="projectName" placeholder="Enter project name" />
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-primary" @onclick="Save">Save</button>
             @if (!string.IsNullOrEmpty(status))
             {
                 <p class="mb-0">@status</p>
@@ -45,13 +67,55 @@
         set => SimulationState.TimeStep = Math.Pow(10, value - 4);
     }
 
+    private string projectName = "";
+    private bool showDropdown = false;
     private string status = "";
 
-    private async Task Save()
+    private async Task LoadProjects()
     {
         try
         {
-            await CanvasState.SaveProjectAsync(Http);
+            await CanvasState.LoadProjectsAsync(Http);
+            showDropdown = CanvasState.AvailableProjects.Any();
+            status = "";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            status = $"Failed to load projects: {ex.Message}";
+        }
+    }
+
+    private async Task OnProjectSelected(ChangeEventArgs e)
+    {
+        var selectedName = e.Value?.ToString();
+        if (!string.IsNullOrWhiteSpace(selectedName))
+        {
+            try
+            {
+                await CanvasState.LoadSelectedAsync(Http, selectedName);
+                status = $"Loaded project \"{selectedName}\"";
+                showDropdown = false;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                status = $"Failed to load project: {ex.Message}";
+            }
+        }
+    }
+
+    private async Task Save()
+    {
+        if (string.IsNullOrWhiteSpace(projectName))
+        {
+            status = "Please enter a project name before saving.";
+            return;
+        }
+
+        try
+        {
+            await CanvasState.SaveProjectAsync(Http, projectName);
             status = "Project saved!";
         }
         catch (HttpRequestException ex)
@@ -71,5 +135,4 @@
             status = $"Error: {ex.Message}";
         }
     }
-    
 }

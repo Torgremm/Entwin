@@ -10,6 +10,7 @@ public class ComponentSaveDTO
 
 public class UIData
 {
+    public string DisplayName { get; set; } = string.Empty;
     public double X { get; set; }
     public double Y { get; set; }
     public int InputCount{ get; set; }

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Entwin.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250802105517_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250803102724_newSaveFormat")]
+    partial class newSaveFormat
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,10 @@ namespace Entwin.API.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("CanvasDataJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

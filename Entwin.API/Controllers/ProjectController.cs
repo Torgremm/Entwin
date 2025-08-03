@@ -27,41 +27,49 @@ public class ProjectController : ControllerBase
             return BadRequest(ModelState);
 
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
         if (userId == null)
             return Unauthorized("User ID not found.");
 
-        var projectModel = new ProjectModel
-            {
-                UserId = userId,
-                SavedTime = projectDto.SavedTime,
-                CanvasDataJson = JsonSerializer.Serialize(projectDto.CanvasData)
-            };
+        var existingProject = await _context.Projects
+            .FirstOrDefaultAsync(p => p.Name == projectDto.Name && p.UserId == userId);
 
-        _context.Projects.Add(projectModel);
+        if (existingProject != null)
+        {
+            var updatedModel = ComponentMapper.MapToModel(projectDto);
+            existingProject.CanvasData = updatedModel.CanvasData;
+            existingProject.SavedTime = updatedModel.SavedTime;
+        }
+        else
+        {
+            var projectModel = ComponentMapper.MapToModel(projectDto);
+            projectModel.UserId = userId;
+            _context.Projects.Add(projectModel);
+        }
+
         await _context.SaveChangesAsync();
 
-        return Ok(projectModel);
+        return Ok();
     }
 
     [HttpPost("load")]
-    public async Task<IActionResult> LoadProject([FromBody] ProjectModel project)
+    public async Task<IActionResult> LoadProject([FromBody] string projectName)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    
+
         if (userId == null)
             return Unauthorized("User ID not found.");
-    
+
         var prj = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == project.Id && p.UserId == userId);
-    
+            .FirstOrDefaultAsync(p => p.Name == projectName && p.UserId == userId);
+
         if (prj == null)
             return NotFound();
-    
-        return Ok(prj);
+
+        var dto = ComponentMapper.MapToDTO(prj);
+        return Ok(dto);
     }
 
-    [HttpGet]
+    [HttpGet("load")]
     public async Task<IActionResult> GetProjects()
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -73,6 +81,7 @@ public class ProjectController : ControllerBase
             .Where(p => p.UserId == userId)
             .ToListAsync();
 
-        return Ok(projects);
+        var dtos = projects.Select(ComponentMapper.MapToDTO).ToList();
+        return Ok(dtos);
     }
 }

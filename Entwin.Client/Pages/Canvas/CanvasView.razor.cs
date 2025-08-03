@@ -18,6 +18,18 @@ public partial class CanvasView
     private ElementReference canvasRef;
     private DomRect canvasRectCache = new();
 
+    protected override void OnInitialized()
+    {
+        CanvasState.OnChange += CanvasStateChanged;
+    }
+
+    private void CanvasStateChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        CanvasState.OnChange -= CanvasStateChanged;
+    }
+
     private readonly List<(string Name, Type ComponentType)> availableComponents = new()
     {
         ("Constant", typeof(Constant)),
@@ -28,7 +40,8 @@ public partial class CanvasView
         ("TransferFunction", typeof(TransferFunction))
     };
 
-    private readonly List<BaseComponentData> _cells = new();
+    private IReadOnlyList<BaseComponentData> _cells => CanvasState.GetCells();
+    private IReadOnlyList<Connection> _connections => CanvasState.GetConnections();
 
     public class Connection
     {
@@ -38,9 +51,6 @@ public partial class CanvasView
         public int To_Position { get; set; }
         public bool IsSelected { get; set; }
     }
-    private readonly List<Connection> _connections = new();
-
-
 
     private int? draggingCellId = null;
     private double offsetX, offsetY;
@@ -74,7 +84,7 @@ public partial class CanvasView
                     if (cell is BaseComponentData dtoComponent)
                     {
                         if (!_connections.Any(conn => conn.From == cell.Id))
-                            _connections.Add(new Connection { From = cell.Id });
+                            CanvasState.AddConnection(new Connection { From = cell.Id });
 
                         return dtoComponent.ToDTO();
                     }
@@ -111,13 +121,12 @@ public partial class CanvasView
             SimulationState.LastResult = result;
 
             StateHasChanged();
-            CanvasState.UpdateCanvasState(_cells, _connections);
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Simulation exception: {ex.Message}");
         }
-    }    
+    }
 
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -125,7 +134,6 @@ public partial class CanvasView
         if (firstRender)
         {
             canvasRectCache = await JS.InvokeAsync<DomRect>("getBoundingClientRect", canvasRef);
-            CanvasState.UpdateCanvasState(_cells, _connections);
             StateHasChanged();
         }
     }
@@ -166,10 +174,8 @@ public partial class CanvasView
             var cell = _cells.FirstOrDefault(c => c.Id == draggingCellId.Value);
             if (cell != null)
             {
-                cell.X = Math.Round(clampedX);
-                cell.Y = Math.Round(clampedY);
+                CanvasState.UpdateCellPosition(cell.Id, clampedX, clampedY);
                 StateHasChanged();
-                CanvasState.UpdateCanvasState(_cells, _connections);
             }
         }
     }
@@ -231,7 +237,7 @@ public partial class CanvasView
                 IsSelected = false
             };
 
-            _connections.Add(connection);
+            CanvasState.AddConnection(connection);
 
             _isDraggingOutput = false;
         }
@@ -274,18 +280,14 @@ public partial class CanvasView
     private Task SelectConnection((Connection conn, MouseEventArgs e) args)
     {
         var (conn, e) = args;
-
         bool shiftHeld = e.ShiftKey;
 
         if (!shiftHeld)
         {
-            foreach (var c in _connections)
-                c.IsSelected = false;
-            foreach (var c in _cells)
-                c.IsSelected = false;
+            CanvasState.ClearSelection();
         }
 
-        conn.IsSelected = !conn.IsSelected;
+        CanvasState.ToggleConnectionSelection(conn);
 
         if (conn.IsSelected)
         {
@@ -311,30 +313,22 @@ public partial class CanvasView
 
         if (!shiftHeld)
         {
-            foreach (var c in _cells)
-                c.IsSelected = false;
-            foreach (var c in _connections)
-                c.IsSelected = false;
+            CanvasState.ClearSelection();
         }
-        cell.IsSelected = !cell.IsSelected;
+
+        CanvasState.ToggleCellSelection(cell.Id);
 
         if (cell.IsSelected)
             _selectedComponent = cell;
+        else
+            _selectedComponent = null;
     }
 
     private void OnCanvasClick(MouseEventArgs e)
     {
         if (e.Button == 0)
         {
-            foreach (var conn in _connections)
-            {
-                conn.IsSelected = false;
-            }
-            foreach (var cell in _cells)
-            {
-                cell.IsSelected = false;
-            }
-
+            CanvasState.ClearSelection();
             _selectedComponent = null;
             showContextMenu = false;
             showSignalPopup = false;
@@ -359,12 +353,11 @@ public partial class CanvasView
             newCell.X = _cursorPosition.X;
             newCell.Y = _cursorPosition.Y;
 
-            _cells.Add(newCell);
+            CanvasState.AddCell(newCell);
         }
 
         showContextMenu = false;
         StateHasChanged();
-        CanvasState.UpdateCanvasState(_cells, _connections);
     }
 
 
@@ -372,15 +365,9 @@ public partial class CanvasView
     {
         if (e.Key == "Delete")
         {
-            _connections.RemoveAll(c => c.IsSelected);
-
-            var selectedCellIds = _cells.Where(c => c.IsSelected).Select(c => c.Id).ToHashSet();
-            _connections.RemoveAll(c => selectedCellIds.Contains(c.From) || selectedCellIds.Contains(c.To));
-            _cells.RemoveAll(c => c.IsSelected);
-
+            CanvasState.DeleteSelected();
+            _selectedComponent = null;
             StateHasChanged();
-            CanvasState.UpdateCanvasState(_cells, _connections);
-
         }
     }
 
@@ -418,4 +405,5 @@ public partial class CanvasView
             showSignalPopup = true;
         }
     }
+
 }

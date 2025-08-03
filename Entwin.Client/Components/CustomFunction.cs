@@ -1,4 +1,5 @@
 using Entwin.Shared.Components;
+using Entwin.Shared.Models;
 
 namespace Entwin.Client.Components
 {
@@ -19,6 +20,19 @@ namespace Entwin.Client.Components
                 Id = this.Id,
                 UserInput = this.UserInput
             };
+        }
+
+        public CustomFunction(ComponentSaveDTO dto) : base(dto)
+        {
+            if (dto.SimulationData is CustomFunctionDTO data)
+            {
+                Id = data.Id;
+                UserInput = data.UserInput;
+            }
+            else
+            {
+                throw new ArgumentException("Invalid DTO for Constant");
+            }
         }
     }
 }

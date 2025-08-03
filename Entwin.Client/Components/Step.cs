@@ -1,4 +1,6 @@
 using Entwin.Shared.Components;
+using Entwin.Shared.Models;
+
 namespace Entwin.Client.Components
 {
     public class Step : BaseComponentData
@@ -22,6 +24,21 @@ namespace Entwin.Client.Components
                 EndValue = this.EndValue,
                 SwitchTime = this.SwitchTime
             };
+        }
+
+        public Step(ComponentSaveDTO dto) : base(dto)
+        {
+            if (dto.SimulationData is StepDTO data)
+            {
+                Id = data.Id;
+                StartValue = data.StartValue;
+                EndValue = data.EndValue;
+                SwitchTime = data.SwitchTime;
+            }
+            else
+            {
+                throw new ArgumentException("Invalid DTO for Constant");
+            }
         }
     }
 }

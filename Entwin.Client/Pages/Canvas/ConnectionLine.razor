@@ -38,8 +38,8 @@
 </svg>
 
 @code {
-    [Parameter] public List<BaseComponentData> Cells { get; set; } = [];
-    [Parameter] public List<CanvasView.Connection> Connections { get; set; } = [];
+    [Parameter] public IReadOnlyList<BaseComponentData> Cells { get; set; } = [];
+    [Parameter] public IReadOnlyList<CanvasView.Connection> Connections { get; set; } = [];
     [Parameter] public EventCallback<(CanvasView.Connection, MouseEventArgs)> OnSelect { get; set; }
     [Parameter] public Func<int, int, int, int, bool>? IsActive { get; set; }
 }
