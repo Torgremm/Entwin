@@ -4,12 +4,12 @@ namespace Entwin.Shared.Models;
 
 public class ProjectSaveDTO
 {
-    public CanvasDTO CanvasData { get; set; }
+    public required CanvasDTO CanvasData { get; set; }
     public DateTime SavedTime { get; set; }
 }
 
 public class CanvasDTO
 {
-    public List<SimulatableDTOBase> Components { get; set; }
-    public List<ConnectionDTO> Connections { get; set; }
+    public List<ComponentSaveDTO>? Components { get; set; }
+    public List<ConnectionDTO>? Connections { get; set; }
 }

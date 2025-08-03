@@ -1,7 +1,7 @@
 using Entwin.Shared.Components;
 namespace Entwin.Client.Components
 {
-    public class Step : BaseComponentData, ISimulatableComponent
+    public class Step : BaseComponentData
     {
         public double StartValue { get; set; } = 0;
         public double EndValue { get; set; } = 1;
@@ -13,7 +13,7 @@ namespace Entwin.Client.Components
             OutputCount = 1;
         }
 
-        public SimulatableDTOBase ToDTO()
+        public override SimulatableDTOBase ToDTO()
         {
             return new StepDTO
             {

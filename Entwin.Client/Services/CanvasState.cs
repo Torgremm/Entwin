@@ -24,8 +24,8 @@ public class CanvasStateService
             CanvasData = new CanvasDTO
             {
                 Components = _cells
-                    .OfType<ISimulatableComponent>()
-                    .Select(c => c.ToDTO())
+                    .OfType<BaseComponentData>()
+                    .Select(c => c.ToSave())
                     .ToList(),
 
                 Connections = _connections

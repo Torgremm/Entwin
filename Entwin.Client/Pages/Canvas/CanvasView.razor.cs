@@ -71,7 +71,7 @@ public partial class CanvasView
 
                 Components = _cells.Select(cell =>
                 {
-                    if (cell is ISimulatableComponent dtoComponent)
+                    if (cell is BaseComponentData dtoComponent)
                     {
                         if (!_connections.Any(conn => conn.From == cell.Id))
                             _connections.Add(new Connection { From = cell.Id });

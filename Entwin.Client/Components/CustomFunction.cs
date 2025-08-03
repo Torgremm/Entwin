@@ -2,7 +2,7 @@ using Entwin.Shared.Components;
 
 namespace Entwin.Client.Components
 {
-    public class CustomFunction : BaseComponentData, ISimulatableComponent
+    public class CustomFunction : BaseComponentData
     {
         public string UserInput { get; set; } = "input0";
         public CustomFunction()
@@ -12,7 +12,7 @@ namespace Entwin.Client.Components
             OutputCount = 1;
         }
 
-        public SimulatableDTOBase ToDTO()
+        public override SimulatableDTOBase ToDTO()
         {
             return new CustomFunctionDTO
             {

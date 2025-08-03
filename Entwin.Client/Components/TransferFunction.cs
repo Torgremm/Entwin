@@ -2,7 +2,7 @@ using Entwin.Shared.Components;
 
 namespace Entwin.Client.Components
 {
-    public class TransferFunction : BaseComponentData, ISimulatableComponent
+    public class TransferFunction : BaseComponentData
     {
         public int[] Numerator = [1];
         public int[] Denominator = [1, 1];
@@ -13,7 +13,7 @@ namespace Entwin.Client.Components
             OutputCount = 1;
         }
 
-        public SimulatableDTOBase ToDTO()
+        public override SimulatableDTOBase ToDTO()
         {
             return new TransferFunctionDTO
             {

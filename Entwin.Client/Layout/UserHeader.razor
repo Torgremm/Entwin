@@ -21,9 +21,10 @@
         await LoginModalService.ShowLoginAsync(OnLoginSuccess);
     }
 
-    private async Task OnLoginSuccess()
+    private Task OnLoginSuccess()
     {
         StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private void Logout()
