@@ -1,4 +1,5 @@
 @inject AuthService AuthService
+@inject LoginModalService LoginModalService
 
 <div class="modal show d-block" tabindex="-1">
     <div class="modal-dialog">
@@ -9,15 +10,19 @@
                 <input class="form-control mb-2" type="password" placeholder="Password" @bind="password" />
                 <div class="text-danger">@error</div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" @onclick="Login">Login</button>
-                <button class="btn btn-secondary" @onclick="Register">Register</button>
+            <div class="modal-footer d-flex justify-content-between">
+                <button class="btn btn-outline-secondary" @onclick="Cancel">Cancel</button>
+                <div>
+                    <button class="btn btn-primary me-2" @onclick="Login">Login</button>
+                    <button class="btn btn-secondary" @onclick="Register">Register</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 @code {
+    [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnLoginSuccess { get; set; }
 
     private string email = "";
@@ -28,18 +33,39 @@
     {
         var success = await AuthService.Login(email, password);
         if (success)
+        {
             await OnLoginSuccess.InvokeAsync();
+            if (LoginModalService.DeferredAction != null)
+                await LoginModalService.DeferredAction.Invoke();
+            await CloseModal();
+        }
         else
+        {
             error = "Login failed. Try again.";
+        }
     }
 
     private async Task Register()
     {
         var registered = await AuthService.Register(email, password);
         if (registered)
+        {
             await Login();
+        }
         else
+        {
             error = "Registration failed.";
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await CloseModal();
+    }
+
+    private async Task CloseModal()
+    {
+        LoginModalService.Clear();
+        await OnClose.InvokeAsync();
     }
 }
-

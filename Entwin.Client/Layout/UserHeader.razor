@@ -16,10 +16,13 @@
 @code {
     private bool IsLoggedIn => !string.IsNullOrEmpty(AuthService.Token);
 
+    
+
     private async Task ShowLogin()
     {
         await LoginModalService.ShowLoginAsync(OnLoginSuccess);
     }
+
 
     private Task OnLoginSuccess()
     {
@@ -31,5 +34,20 @@
     {
         AuthService.Logout();
         StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthService.AuthStateChanged += AuthStateChanged;
+    }
+
+    private void AuthStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AuthService.AuthStateChanged -= AuthStateChanged;
     }
 }

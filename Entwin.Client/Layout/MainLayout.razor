@@ -19,7 +19,7 @@
 
 @if (showLoginModal)
 {
-    <LoginModal OnLoginSuccess="HandleLoginSuccess" />
+    <LoginModal OnLoginSuccess="HandleLoginSuccess" OnClose="CloseLoginModal"/>
 }
 
 @code {
@@ -37,6 +37,13 @@
     {
         showLoginModal = true;
         await InvokeAsync(StateHasChanged);
+    }
+
+    private Task CloseLoginModal()
+    {
+        showLoginModal = false;
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private async Task HandleLoginSuccess()

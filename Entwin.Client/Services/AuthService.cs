@@ -7,6 +7,7 @@ public class AuthService
     private readonly HttpClient _http;
     private string? _token;
 
+    public event Action? AuthStateChanged;
     public string? Token => _token;
 
     public AuthService(HttpClient http)
@@ -27,6 +28,7 @@ public class AuthService
         if (!string.IsNullOrEmpty(_token))
         {
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            AuthStateChanged?.Invoke();
             return true;
         }
 
@@ -43,6 +45,7 @@ public class AuthService
     {
         _token = null;
         _http.DefaultRequestHeaders.Authorization = null;
+        AuthStateChanged?.Invoke();
     }
 
     private class LoginResponse

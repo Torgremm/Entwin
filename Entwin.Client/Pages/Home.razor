@@ -1,7 +1,230 @@
 ﻿@page "/"
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject CanvasStateService CanvasService
+@inject AuthService AuthService
+@inject LoginModalService LoginModalService
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1 class="text-center mt-5">Welcome to Entwin</h1>
+<p class="text-center mb-5">Look at pretty graphs or whatnot.</p>
 
-Welcome to your new app.
+<div class="container">
+    <div class="row text-center">
+        <!-- New -->
+        <div class="col-md-3 mb-4">
+            <div class="panel bg-primary text-white p-4 rounded shadow" @onclick="NewCanvas" style="cursor: pointer;">
+                <h3>New</h3>
+                <p>Create a new canvas project</p>
+            </div>
+        </div>
+
+        <!-- Load (or Register / Log in) -->
+        <div class="col-md-3 mb-4">
+            <div class="panel p-4 rounded shadow"
+                 style="@GetLoadPanelStyle()"
+                 @onclick="HandleLoadClick">
+                <h3>@(IsLoggedIn ? "Load" : "Register / Log in")</h3>
+                <p>@(IsLoggedIn ? "Load a saved project" : "Access your saved projects")</p>
+            </div>
+        </div>
+
+        <!-- Discover -->
+        <div class="col-md-3 mb-4">
+            <div class="panel bg-warning text-dark p-4 rounded shadow"
+                 @onclick="ToggleDiscover"
+                 style="cursor: pointer;">
+                <h3>Discover</h3>
+                <p>Browse public projects</p>
+            </div>
+        </div>
+
+        <!-- About -->
+        <div class="col-md-3 mb-4">
+            <div class="panel bg-secondary text-white p-4 rounded shadow"
+                 @onclick="ToggleAbout"
+                 style="cursor: pointer;">
+                <h3>About</h3>
+                <p>Learn about this app</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Panel Content -->
+    @if (showLoadContent && IsLoggedIn)
+    {
+        <div class="p-4 border border-success rounded mb-4" style="background-color: #e9f0e9;">
+            @if (loadError != null)
+            {
+                <p class="text-danger">@loadError</p>
+            }
+            else if (projects.Count == 0)
+            {
+                <p>No saved projects found.</p>
+            }
+            else
+            {
+                <h4>Available Projects</h4>
+                <ul>
+                    @foreach (var project in projects)
+                    {
+                        <li @onclick="() => LoadAndNavigate(project.Name)" style="cursor: pointer;">
+                            @project.Name
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    }
+
+    <!-- Discover Panel Content -->
+    @if (showDiscoverContent)
+    {
+        <div class="p-4 border border-warning rounded mb-4" style="background-color: #fff8e5;">
+            <h4>Discover Projects</h4>
+            <p>This is a placeholder for future discovery features.</p>
+        </div>
+    }
+
+    <!-- About Panel Content -->
+    @if (showAboutContent)
+    {
+        <div class="p-4 border border-secondary rounded mb-4" style="background-color: #f4f4f4;">
+            <h4>About Entwin</h4>
+            <p>Entwin is an interactive canvas-based modeling tool. More info coming soon.</p>
+        </div>
+    }
+
+    @if (showConfirmDialog)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Navigation</h5>
+                        <button type="button" class="btn-close" @onclick="CloseDialog"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>You have unsaved changes. Are you sure you want to create a new canvas? This will discard current changes.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CloseDialog">Cancel</button>
+                        <button class="btn btn-primary" @onclick="ConfirmNewCanvas">Yes, create new</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool showLoadContent = false;
+    private bool showDiscoverContent = false;
+    private bool showAboutContent = false;
+    private bool showConfirmDialog = false;
+
+    private List<ProjectSaveDTO> projects = new();
+    private string? loadError;
+
+    private bool IsLoggedIn => !string.IsNullOrEmpty(AuthService.Token);
+
+    private void NewCanvas()
+    {
+        if (!CanvasService.GetCells().Any())
+        {
+            Navigation.NavigateTo("canvas");
+        }
+        else
+        {
+            showConfirmDialog = true;
+        }
+    }
+
+    private void CloseDialog()
+    {
+        showConfirmDialog = false;
+    }
+
+    private void ConfirmNewCanvas()
+    {
+        CanvasService.RemoveCell();
+        CanvasService.RemoveConnection();
+        showConfirmDialog = false;
+        Navigation.NavigateTo("canvas");
+    }
+
+    private async void HandleLoadClick()
+    {
+        if (!IsLoggedIn)
+        {
+            await LoginModalService.ShowLoginAsync(OnLoginSuccess);
+            return;
+        }
+
+        showDiscoverContent = false;
+        showAboutContent = false;
+        showLoadContent = true;
+
+        try
+        {
+            await CanvasService.LoadProjectsAsync(Http);
+            projects = CanvasService.AvailableProjects.ToList();
+            loadError = null;
+        }
+        catch
+        {
+            loadError = "Failed to load projects.";
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LoadAndNavigate(string projectName)
+    {
+        await CanvasService.LoadSelectedAsync(Http, projectName);
+        Navigation.NavigateTo("canvas");
+    }
+
+    private void ToggleDiscover()
+    {
+        showLoadContent = false;
+        showAboutContent = false;
+        showDiscoverContent = !showDiscoverContent;
+    }
+
+    private void ToggleAbout()
+    {
+        showLoadContent = false;
+        showDiscoverContent = false;
+        showAboutContent = !showAboutContent;
+    }
+
+    private Task OnLoginSuccess()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private string GetLoadPanelStyle()
+    {
+        return IsLoggedIn
+            ? "background-color: #28a745; color: white; cursor: pointer;"
+            : "background-color: #dcdcdc; color: #333; cursor: pointer;";
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthService.AuthStateChanged += AuthStateChanged;
+    }
+
+    private void AuthStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AuthService.AuthStateChanged -= AuthStateChanged;
+    }
+}

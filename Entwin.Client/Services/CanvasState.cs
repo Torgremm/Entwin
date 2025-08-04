@@ -71,6 +71,18 @@ public class CanvasStateService
         OnChange?.Invoke();
     }
 
+    public void RemoveCell()
+    {
+        _cells.Clear();
+        OnChange?.Invoke();
+    }
+
+    public void RemoveConnection()
+    {
+        _connections.Clear();
+        OnChange?.Invoke();
+    }
+
     public void UpdateCellPosition(int cellId, double x, double y)
     {
         var cell = _cells.FirstOrDefault(c => c.Id == cellId);
