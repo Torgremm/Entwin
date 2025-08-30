@@ -1,0 +1,10 @@
+@page "/piping"
+@using Entwin.Client.Data
+@inject PipingTableStateService PipeTableState
+
+<PipeTable Items="Items" />
+
+@code {
+    public IEnumerable<Pipe>? Items => PipeTableState.GetObjects();
+    
+}

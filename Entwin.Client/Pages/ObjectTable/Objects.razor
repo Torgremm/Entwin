@@ -1,0 +1,12 @@
+@page "/objects"
+@using Entwin.Client.Data
+@inject ObjectTableStateService ObjectTableState
+
+<RigObjectTable Items="Items" />
+<ObjectParameterTable Items="Parameters" />
+
+@code {
+    public IEnumerable<RigObject>? Items => ObjectTableState.GetObjects();
+    public IEnumerable<ObjectParameter>? Parameters => ObjectTableState.GetParameters();
+    
+}

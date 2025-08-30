@@ -20,6 +20,8 @@ if (string.IsNullOrWhiteSpace(apiBaseUrl))
 
 builder.Services.AddScoped<SimulationState>();
 builder.Services.AddScoped<CanvasStateService>();
+builder.Services.AddScoped<ObjectTableStateService>();
+builder.Services.AddScoped<PipingTableStateService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<LoginModalService>();
 
