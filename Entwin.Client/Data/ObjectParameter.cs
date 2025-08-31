@@ -13,6 +13,10 @@ public class ObjectParameter : ObjectParameterDTO
             return Value;
 
         RigObject? obj = ObjectTableStateService.Instance?.GetById(ObjectId.Value);
-        return obj.Tag ?? Value;
+
+        if (obj != null)
+            return obj.Tag;
+            
+        return Value;
     }
 }

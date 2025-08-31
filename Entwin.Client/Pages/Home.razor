@@ -4,6 +4,7 @@
 @inject CanvasStateService CanvasService
 @inject AuthService AuthService
 @inject LoginModalService LoginModalService
+@inject LoadService LoadService
 
 <PageTitle>Home</PageTitle>
 
@@ -22,11 +23,11 @@
 
         <!-- Load (or Register / Log in) -->
         <div class="col-md-3 mb-4">
-            <div class="panel p-4 rounded shadow"
-                 style="@GetLoadPanelStyle()"
+            <div class="panel bg-success text-white p-4 rounded shadow"
+                 style="cursor: pointer;"
                  @onclick="HandleLoadClick">
-                <h3>@(IsLoggedIn ? "Load" : "Register / Log in")</h3>
-                <p>@(IsLoggedIn ? "Load a saved project" : "Access your saved projects")</p>
+                <h3>Load</h3>
+                <p>Load a saved project</p>
             </div>
         </div>
 
@@ -52,31 +53,31 @@
     </div>
 
     <!-- Load Panel Content -->
-    @if (showLoadContent && IsLoggedIn)
-    {
-        <div class="p-4 border border-success rounded mb-4" style="background-color: #e9f0e9;">
-            @if (loadError != null)
-            {
-                <p class="text-danger">@loadError</p>
-            }
-            else if (projects.Count == 0)
-            {
-                <p>No saved projects found.</p>
-            }
-            else
-            {
-                <h4>Available Projects</h4>
-                <ul>
-                    @foreach (var project in projects)
-                    {
-                        <li @onclick="() => LoadAndNavigate(project.Name)" style="cursor: pointer;">
-                            @project.Name
-                        </li>
-                    }
-                </ul>
-            }
-        </div>
-    }
+    @if (showLoadContent)
+{
+    <div class="p-4 border border-success rounded mb-4" style="background-color: #e9f0e9;">
+        <h4>Load a project file</h4>
+        <InputFile OnChange="HandleFileSelected" accept=".json" />
+        
+        @if (loadError != null)
+        {
+            <p class="text-danger">@loadError</p>
+        }
+
+        @if (projects.Count > 0)
+        {
+            <h4>Available Server Projects</h4>
+            <ul>
+                @foreach (var project in projects)
+                {
+                    <li @onclick="() => LoadAndNavigate(project.Name)" style="cursor: pointer;">
+                        @project.Name
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+}
 
     <!-- Discover Panel Content -->
     @if (showDiscoverContent)
@@ -154,27 +155,25 @@
         Navigation.NavigateTo("canvas");
     }
 
-    private async void HandleLoadClick()
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
-        if (!IsLoggedIn)
-        {
-            await LoginModalService.ShowLoginAsync(OnLoginSuccess);
-            return;
-        }
-
-        showDiscoverContent = false;
-        showAboutContent = false;
-        showLoadContent = true;
-
         try
         {
-            await CanvasService.LoadProjectsAsync(Http);
-            projects = CanvasService.AvailableProjects.ToList();
-            loadError = null;
+            var file = e.File;
+
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+
+            var fileBytes = ms.ToArray();
+
+            await LoadService.LoadFromFileAsync(fileBytes);
+
+            Navigation.NavigateTo("canvas");
         }
-        catch
+        catch (Exception ex)
         {
-            loadError = "Failed to load projects.";
+            loadError = $"Failed to load file: {ex.Message}";
         }
 
         StateHasChanged();
@@ -182,7 +181,7 @@
 
     private async Task LoadAndNavigate(string projectName)
     {
-        await CanvasService.LoadSelectedAsync(Http, projectName);
+        await LoadService.LoadProjectFromServerAsync(projectName);
         Navigation.NavigateTo("canvas");
     }
 
@@ -191,6 +190,32 @@
         showLoadContent = false;
         showAboutContent = false;
         showDiscoverContent = !showDiscoverContent;
+    }
+
+    private async Task HandleLoadClick()
+    {
+        showDiscoverContent = false;
+        showAboutContent = false;
+        showLoadContent = !showLoadContent;
+
+        if (!IsLoggedIn)
+        {
+            loadError = "You must be logged in to load server projects.";
+            return;
+        }
+
+        try
+        {
+            await LoadService.LoadProjectsFromServerAsync();
+            projects = LoadService.AvailableProjects.ToList();
+            loadError = null;
+        }
+        catch
+        {
+            loadError = "Failed to load projects.";
+        }
+
+        StateHasChanged();
     }
 
     private void ToggleAbout()

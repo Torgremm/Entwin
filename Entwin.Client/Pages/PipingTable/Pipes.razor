@@ -1,10 +1,22 @@
 @page "/piping"
 @using Entwin.Client.Data
 @inject PipingTableStateService PipeTableState
+@inject ObjectTableStateService ObjectTableState
 
-<PipeTable Items="Items" />
+<div class="row">
+    <div class="col">
+        <RigObjectTable Items="Incoming" />
+    </div>
+    <div class="col">
+        <PipeTable Items="Items" />
+    </div>
+    <div class="col">
+        <RigObjectTable Items="Outgoing" />
+    </div>
+</div>
 
 @code {
     public IEnumerable<Pipe>? Items => PipeTableState.GetObjects();
-    
+    public IEnumerable<RigObject>? Incoming => ObjectTableState.GetByIds(PipeTableState.GetIncoming());
+    public IEnumerable<RigObject>? Outgoing => ObjectTableState.GetByIds(PipeTableState.GetOutgoing());
 }

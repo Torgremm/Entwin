@@ -9,7 +9,7 @@ namespace Entwin.Client.Services;
 using System.ComponentModel;
 using System.Net.Http.Json;
 
-public class ObjectTableStateService
+public class ObjectTableStateService : ITableService<RigObject>
 {
     public static ObjectTableStateService? Instance { get; private set; }
 
@@ -24,6 +24,12 @@ public class ObjectTableStateService
     }
 
     public RigObject? GetById(int id) => _objects.FirstOrDefault(o => o.Id == id);
+
+    public IReadOnlyList<RigObject> GetByIds(IEnumerable<int> ids)
+    {
+        var idSet = ids.ToHashSet();
+        return _objects.Where(o => idSet.Contains(o.Id)).ToList();
+    }
 
     public event Action? OnChange;
 

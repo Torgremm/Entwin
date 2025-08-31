@@ -24,6 +24,7 @@ builder.Services.AddScoped<ObjectTableStateService>();
 builder.Services.AddScoped<PipingTableStateService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<LoginModalService>();
+builder.Services.AddScoped<LoadService>();
 
 
 builder.Services.AddScoped(sp =>

@@ -4,8 +4,6 @@
     <thead>
         <tr>
             <th>Id</th>
-            <th>Outgoing Ids</th>
-            <th>Incoming Ids</th>
             <th>Volume</th>
             <th>Material</th>
             <th>Verticality</th>
@@ -18,8 +16,6 @@
             {
                 <tr>
                     <td>@item.Id</td>
-                    <td>@(item.OutgoingIds != null ? string.Join(", ", item.OutgoingIds) : "-")</td>
-                    <td>@(item.IncomingIds != null ? string.Join(", ", item.IncomingIds) : "-")</td>
                     <td>@item.Volume</td>
                     <td>@item.Material</td>
                     <td>@item.Verticality</td>

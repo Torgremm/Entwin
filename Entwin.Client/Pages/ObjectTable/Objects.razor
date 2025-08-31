@@ -2,8 +2,14 @@
 @using Entwin.Client.Data
 @inject ObjectTableStateService ObjectTableState
 
-<RigObjectTable Items="Items" />
-<ObjectParameterTable Items="Parameters" />
+<div class="row">
+    <div class="col">
+        <RigObjectTable Items="Items" />
+    </div>
+    <div class="col">
+        <ObjectParameterTable Items="Parameters" />
+    </div>
+</div>
 
 @code {
     public IEnumerable<RigObject>? Items => ObjectTableState.GetObjects();

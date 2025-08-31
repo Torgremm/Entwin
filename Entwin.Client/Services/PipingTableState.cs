@@ -7,14 +7,34 @@ using Entwin.Client.Pages.Canvas;
 namespace Entwin.Client.Services;
 using System.Net.Http.Json;
 
-public class PipingTableStateService
+public class PipingTableStateService : ITableService<Pipe>
 {
     private List<Pipe> _objects = new();
-    private List<ObjectParameter> _parameters = new();
 
     public IReadOnlyList<Pipe> GetObjects() => _objects.AsReadOnly();
 
     public event Action? OnChange;
+
+    public static PipingTableStateService? Instance { get; private set; }
+
+    public Pipe? GetById(int id) => _objects.FirstOrDefault(o => o.Id == id);
+    public IReadOnlyList<Pipe> GetByIds(IEnumerable<int> ids)
+    {
+        var idSet = ids.ToHashSet();
+        return _objects.Where(o => idSet.Contains(o.Id)).ToList();
+    }
+
+    public IReadOnlyList<int> GetOutgoing()
+    {
+        var selected = _objects.Where(o => o.IsSelected);
+        return selected.SelectMany(o => o.OutgoingIds).ToList();
+    }
+
+    public IReadOnlyList<int> GetIncoming()
+    {
+        var selected = _objects.Where(o => o.IsSelected);
+        return selected.SelectMany(o => o.IncomingIds).ToList();
+    }
 
     public void UpdateObjectState(List<Pipe> objects)
     {
